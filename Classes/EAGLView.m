@@ -95,14 +95,15 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
                 kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8};
 
 		//Set stats enabled
-		renderer.statsEnabled = [@"1" isEqualToString:[[NSUserDefaults standardUserDefaults] stringForKey:@"StatisticsEnabled"]];
+        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+        renderer.statsEnabled = [@"1" isEqualToString:[userDefaults stringForKey:@"StatisticsEnabled"]];
 
-        NSString *rendererType = [[NSUserDefaults standardUserDefaults] stringForKey:@"RendererType"];
+        NSString *rendererType = [userDefaults stringForKey:@"RendererType"];
 		bool fixedDesired = [@"0" isEqualToString:rendererType];
 
 		//Set the texture quality
-        if ([[NSUserDefaults standardUserDefaults] stringForKey:@"MaterialQuality"] == nil
-                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"MaterialQuality"] intValue] ) {
+        if ([userDefaults stringForKey:@"MaterialQuality"] == nil
+                || [[userDefaults stringForKey:@"MaterialQuality"] intValue] ) {
             renderer.materialQuality = MATERIAL_QUALITY_HIGH;
         } else {
             renderer.materialQuality = MATERIAL_QUALITY_LOW;
@@ -117,7 +118,7 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
         }      
         
 		if (!fixedDesired) {
-            context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+            context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
         }
 
         if (!context || ![EAGLContext setCurrentContext:context]) {
@@ -128,22 +129,22 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
 		
 		//Set shadow enabled/disabled
 		//Set shadow type
-		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"ShadowType"] == nil
-                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"ShadowType"] intValue])
+		if ([userDefaults stringForKey:@"ShadowType"] == nil
+                || [[userDefaults stringForKey:@"ShadowType"] intValue])
 			renderer.props |= PROP_SHADOW ;
 		else 
 			renderer.props &= ~PROP_SHADOW ;
 
 		
-		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"NormalMappingEnabled"] == nil
-                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"NormalMappingEnabled"] intValue])
+		if ([userDefaults stringForKey:@"NormalMappingEnabled"] == nil
+                || [[userDefaults stringForKey:@"NormalMappingEnabled"] intValue])
 			renderer.props |= PROP_BUMP ;
 		else 
 			renderer.props &= ~PROP_BUMP ;
 
 		
-		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"SpecularMappingEnabled"] == nil
-                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"SpecularMappingEnabled"] intValue])
+		if ([userDefaults stringForKey:@"SpecularMappingEnabled"] == nil
+                || [[userDefaults stringForKey:@"SpecularMappingEnabled"] intValue])
 			renderer.props |= PROP_SPEC ;		
 		else
 			renderer.props &= ~PROP_SPEC ;
@@ -152,10 +153,11 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
 		//MATLIB_printProp(renderer.props);
 
 		animating = FALSE;
-		displayLinkSupported = FALSE;
+		//displayLinkSupported = FALSE;
 		displayLink = nil;
 		animationTimer = nil;
-		//displayLinkSupported = TRUE;
+		displayLinkSupported = TRUE;
+        [self setAnimationFrameInterval:1];
     }
 	
     return self;
