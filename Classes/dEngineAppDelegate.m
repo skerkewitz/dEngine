@@ -29,35 +29,51 @@
 
 @implementation dEngineAppDelegate
 
-@synthesize window;
-@synthesize glView;
-
-- (void) applicationDidFinishLaunching:(UIApplication *)application
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions NS_AVAILABLE_IOS(3_0);
 {
 	[[UIApplication sharedApplication] setStatusBarHidden:YES ];
-	[glView startAnimation];
+
+    // create the base window
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor whiteColor];
+
+
+    UIViewController* uiViewController = [UIViewController new];
+    self.glView = [EAGLView new];
+    self.glView.frame =uiViewController.view.frame;
+    [uiViewController.view addSubview:self.glView];
+    self.glView.backgroundColor = [UIColor greenColor];
+    uiViewController.view.backgroundColor = [UIColor redColor];
+
+    [self.window setRootViewController:uiViewController];
+    self.window.rootViewController.view.backgroundColor = [UIColor yellowColor];
+    [self.window makeKeyAndVisible];
+
+    [self.glView startAnimation];
+
+    return YES;
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
 {
-	[glView stopAnimation];
+	[self.glView stopAnimation];
 }
 
 - (void) applicationDidBecomeActive:(UIApplication *)application
 {
-	[glView startAnimation];
+	[self.glView startAnimation];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {
-	[glView stopAnimation];
+	[self.glView stopAnimation];
 	
 	
 }
 
 - (void) stopEngineActivity
 {
-	[glView stopAnimation];
+	[self.glView stopAnimation];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
@@ -70,14 +86,7 @@
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-	[glView startAnimation];
-}
-
-
-- (void)dealloc {
-	[window release];
-	[glView release];
-	[super dealloc];
+	[self.glView startAnimation];
 }
 
 @end

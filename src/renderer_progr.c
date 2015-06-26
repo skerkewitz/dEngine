@@ -802,8 +802,7 @@ void GetColorBuffer(uchar* data)
 }
 
 
-void initProgrRenderer(renderer_t* renderer)
-{
+void initProgrRenderer(renderer_t* renderer) {
 	/*
 	int numAttVert;
 	int numUnifVert, numUnifFrag;
@@ -831,11 +830,8 @@ void initProgrRenderer(renderer_t* renderer)
 	renderer->GetColorBuffer = GetColorBuffer;
 	renderer->RenderSprite = RenderSprite;
 
-	
 	glViewport(0, 0, renderWidth, renderHeight);
-	
 
-	
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glDisable(GL_BLEND);
@@ -859,8 +855,6 @@ void initProgrRenderer(renderer_t* renderer)
 	
 	//Create shadowMap and FBO
 	CreateFBOandShadowMap();
-	
-	
-	SCR_CheckErrorsF("End of initProgrRenderer", "no details");
 
+	SCR_CheckErrorsF("End of initProgrRenderer", "no details");
 }

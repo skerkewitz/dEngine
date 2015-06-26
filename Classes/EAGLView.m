@@ -79,111 +79,83 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
 
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
-- (id)initWithCoder:(NSCoder*)coder {
+- (id)init {
     
-    if ((self = [super initWithCoder:coder])) {
+    if ((self = [super init])) {
 		
 		eaglview = self;
 		
         // Get the layer
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
         
-		
-		
         eaglLayer.opaque = YES;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithBool:NO], 
-										kEAGLDrawablePropertyRetainedBacking,
-										//kEAGLColorFormatRGBA8, 
-										kEAGLColorFormatRGB565,
-										kEAGLDrawablePropertyColorFormat, nil];
+        eaglLayer.drawableProperties = @{
+                kEAGLDrawablePropertyRetainedBacking : @NO,
+                //kEAGLColorFormatRGBA8,
+                kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8};
 
-		
 		//Set stats enabled
 		renderer.statsEnabled = [@"1" isEqualToString:[[NSUserDefaults standardUserDefaults] stringForKey:@"StatisticsEnabled"]];
-		
-		
-		NSString *rendererType = [[NSUserDefaults standardUserDefaults] stringForKey:@"RendererType"];
+
+        NSString *rendererType = [[NSUserDefaults standardUserDefaults] stringForKey:@"RendererType"];
 		bool fixedDesired = [@"0" isEqualToString:rendererType];
-	
-		
+
 		//Set the texture quality
-        if ([[NSUserDefaults standardUserDefaults] stringForKey:@"MaterialQuality"] == nil || [[[NSUserDefaults standardUserDefaults] stringForKey:@"MaterialQuality"] intValue] )
-        {
+        if ([[NSUserDefaults standardUserDefaults] stringForKey:@"MaterialQuality"] == nil
+                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"MaterialQuality"] intValue] ) {
             renderer.materialQuality = MATERIAL_QUALITY_HIGH;
-        }
-        else
+        } else {
             renderer.materialQuality = MATERIAL_QUALITY_LOW;
-		
+        }
+
 		int vp_width = 320;
         int vp_height = 480;
-        
-        
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
-        {
+
+        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
             vp_width = 780;
             vp_height = 1024;
         }      
         
-		if (!fixedDesired)
-			context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-		if (context == nil)
-		{
-			context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-			 
-			if (!context || ![EAGLContext setCurrentContext:context]) {
-				[self release];
-				return nil;
-			}
-			dEngine_Init(GL_11_RENDERER,vp_width,vp_height);
-		}
-		else
-		{
-			if (!context || ![EAGLContext setCurrentContext:context]) {
-				[self release];
-				return nil;
-			}
-			dEngine_Init(GL_20_RENDERER,vp_width,vp_height);
-		}
-		
+		if (!fixedDesired) {
+            context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+        }
+
+        if (!context || ![EAGLContext setCurrentContext:context]) {
+            return nil;
+        }
+        dEngine_Init(GL_20_RENDERER,vp_width,vp_height);
+
 		
 		//Set shadow enabled/disabled
 		//Set shadow type
-		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"ShadowType"] == nil || [[[NSUserDefaults standardUserDefaults] stringForKey:@"ShadowType"] intValue])
+		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"ShadowType"] == nil
+                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"ShadowType"] intValue])
 			renderer.props |= PROP_SHADOW ;
 		else 
 			renderer.props &= ~PROP_SHADOW ;
 
 		
-		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"NormalMappingEnabled"] == nil || [[[NSUserDefaults standardUserDefaults] stringForKey:@"NormalMappingEnabled"] intValue])
+		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"NormalMappingEnabled"] == nil
+                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"NormalMappingEnabled"] intValue])
 			renderer.props |= PROP_BUMP ;
 		else 
 			renderer.props &= ~PROP_BUMP ;
 
 		
-		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"SpecularMappingEnabled"] == nil || [[[NSUserDefaults standardUserDefaults] stringForKey:@"SpecularMappingEnabled"] intValue])
+		if ([[NSUserDefaults standardUserDefaults] stringForKey:@"SpecularMappingEnabled"] == nil
+                || [[[NSUserDefaults standardUserDefaults] stringForKey:@"SpecularMappingEnabled"] intValue])
 			renderer.props |= PROP_SPEC ;		
 		else
 			renderer.props &= ~PROP_SPEC ;
 
 		//NSLog(@"Engine properties");
 		//MATLIB_printProp(renderer.props);
-		
-        
+
 		animating = FALSE;
 		displayLinkSupported = FALSE;
 		displayLink = nil;
 		animationTimer = nil;
-		
-		// A system version of 3.1 or greater is required to use CADisplayLink. The NSTimer
-		// class is used as fallback when it isn't available.
-		NSString *reqSysVer = @"3.1";
-		NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
-		if ([currSysVer compare:reqSysVer options:NSNumericSearch] != NSOrderedAscending)
-			displayLinkSupported = TRUE;
-        
-        
-        //displayLinkSupported = FALSE;
+		//displayLinkSupported = TRUE;
     }
 	
     return self;
@@ -195,21 +167,18 @@ int triggeredPlay = 0;
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     [context presentRenderbuffer:GL_RENDERBUFFER_OES];
 	
-	if (PLAY_VIDEO && !triggeredPlay)
-	{
+	if (PLAY_VIDEO && !triggeredPlay) {
 		triggeredPlay = 1;
-		
-		CAM_StartPlaying("data/cameraPath/fps.cp");		//fps.cp //ikarauga_level5.cp
-		
-		if (RECORDING_VIDEO)
-			Timer_ForceTimeIncrement(33);
-		
+			CAM_StartPlaying("data/cameraPath/fps.cp");		//fps.cp //ikarauga_level5.cp
+
+		if (RECORDING_VIDEO) {
+            Timer_ForceTimeIncrement(33);
+        }
 	}
 	
 	dEngine_HostFrame();
 	
-	if (RECORDING_VIDEO)
-	{
+	if (RECORDING_VIDEO) {
 		//Location
 		//Rotate
 		dEngine_WriteScreenshot(screenShotDirectory, 1);
@@ -234,8 +203,7 @@ int triggeredPlay = 0;
     [self drawView:nil];
 }
 
-- (NSInteger) animationFrameInterval
-{
+- (NSInteger) animationFrameInterval {
 	return animationFrameInterval;
 }
 
@@ -280,9 +248,7 @@ int triggeredPlay = 0;
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
 	glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
 	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
-    
-    
-	
+
 	renderer.mainFramebufferId = viewFramebuffer;
 	
     if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
@@ -309,146 +275,80 @@ int triggeredPlay = 0;
 
 
 - (void)startAnimation {
-    if (!animating)
-	{
-		
-		if (displayLinkSupported)
-		{
-			// CADisplayLink is API new to iPhone SDK 3.1. Compiling against earlier versions will result in a warning, but can be dismissed
-			// if the system version runtime check for CADisplayLink exists in -initWithCoder:. The runtime check ensures this code will
-			// not be called in system versions earlier than 3.1.
-			
+    if (!animating) {
+		if (displayLinkSupported) {
+
+			// CADisplayLink is API new to iPhone SDK 3.1. Compiling against earlier versions will result in a warning,
+			// but can be dismissed if the system version runtime check for CADisplayLink exists in -initWithCoder:.
+			// The runtime check ensures this code will not be called in system versions earlier than 3.1.
 			displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(drawView:)];
-			
-			/*
-			 Platforms
-			 iPhone1,1 -> iPhone 1G
-			 iPhone1,2 -> iPhone 3G 
-			 iPod1,1   -> iPod touch 1G 
-			 iPod2,1   -> iPod touch 2G 
-			 */
-			
-			size_t size;
-			sysctlbyname("hw.machine", NULL, &size, NULL, 0);
-			char *machine = malloc(size);
-			sysctlbyname("hw.machine", machine, &size, NULL, 0);
-			
-			
-			if (!strcmp(machine, "iPhone1,1") || !strcmp(machine, "iPod1,1"))
-				animationFrameInterval = 2;
-			else
-				animationFrameInterval = 1;
-			/*
-			 #ifdef _ARM_ARCH_7
-			 NSLog(@"Running on _ARM_ARCH_7");
-			 
-			 #else
-			 NSLog(@"Running on _ARM_ARCH_6");
-			 animationFrameInterval = 2;
-			 #endif
-*/			 
-			
-			free(machine);
-				
-				
-			[displayLink setFrameInterval:animationFrameInterval];	
+			[displayLink setFrameInterval:animationFrameInterval];
 			[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-		}
-		else
-		 
-			animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((MAX_FPS) * animationFrameInterval) target:self selector:@selector(drawView:) userInfo:nil repeats:TRUE];
-		
+		} else {
+            animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((MAX_FPS) * animationFrameInterval)
+                                                              target:self
+                                                            selector:@selector(drawView:)
+                                                            userInfo:nil
+                                                             repeats:TRUE];
+        }
+
 		animating = TRUE;
 	}
-	
 }
 
-
 - (void)stopAnimation {
-	if (animating)
-	{
-		if (displayLinkSupported)
-		{
+	if (animating) {
+		if (displayLinkSupported) {
 			[displayLink invalidate];
 			displayLink = nil;
-		}
-		else
-		{
+		} else {
 			[animationTimer invalidate];
 			animationTimer = nil;
 		}
-		
 		animating = FALSE;
 	}
 }
 
+- (void)  loadTexture:(texture_t*)text {
 
-
-
-- (void)  loadTexture:(texture_t*)text
-{
-	
-	
-	CGImageRef spriteImage;
-	CGContextRef spriteContext;
 	//GLubyte *spriteData;
 	//size_t	width = 1, height=1 , bpp=0 , bytePerRow = 0;
 	
 	NSString* name = [[NSString alloc] initWithCString:text->path encoding:NSASCIIStringEncoding];
+    CGImageRef spriteImage = [UIImage imageNamed:name].CGImage;
 
-	
-	
-	spriteImage = [UIImage imageNamed:name].CGImage;
-	
-		
 	// Get the width and height of the image
 	text->file = NULL;
 	
-	if(spriteImage) 
-	{
-		
+	if(spriteImage) {
 		text->width = CGImageGetWidth(spriteImage);
 		text->height = CGImageGetHeight(spriteImage);
 		text->bpp = CGImageGetBitsPerPixel(spriteImage);//
 		
 		text->data = (ubyte *)calloc(text->width * text->height * 4,sizeof(ubyte));
-		
-		if (text->bpp == 24)
-		{
+
+        CGContextRef spriteContext;
+        if (text->bpp == 24) {
 			text->format = TEXTURE_GL_RGB;
 			//NSLog(@"TEXTURE_GL_RGB, bpp=%d ",text->bpp);
 			spriteContext = CGBitmapContextCreate(text->data, text->width, text->height, 8, text->width * 4, CGImageGetColorSpace(spriteImage), kCGImageAlphaNoneSkipLast);
-		}
-		else 
-		{
+		} else {
 			text->format = TEXTURE_GL_RGBA;		
 			//NSLog(@"TEXTURE_GL_RGBA, bpp=%d  ",text->bpp);
 			spriteContext = CGBitmapContextCreate(text->data, text->width, text->height, 8, text->width * 4, CGImageGetColorSpace(spriteImage), kCGImageAlphaPremultipliedLast);
 		}
 
-		
 		CGContextDrawImage(spriteContext, CGRectMake(0.0, 0.0, (CGFloat)text->width, (CGFloat)text->height), spriteImage);
 		CGContextRelease(spriteContext);
-		
-		
-		
-		
-	}
-	else {
+	} else {
 		NSLog(@"[PNG Loader] could not load: %@",name);
 	}
-
-	
-	[name release];
 }
 
 //Native methods
-void loadNativePNG(texture_t* tmpTex)
-{
+void loadNativePNG(texture_t* tmpTex) {
 	[eaglview loadTexture:tmpTex ];
 }
-
-
 
 - (void)dealloc {
     
@@ -457,63 +357,41 @@ void loadNativePNG(texture_t* tmpTex)
     if ([EAGLContext currentContext] == context) {
         [EAGLContext setCurrentContext:nil];
     }
-    
-    [context release];  
-    [super dealloc];
 }
 
 CGPoint previousLookAround;
-
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray* allTouches = [touches allObjects];
-	UITouch *touch;
-	CGPoint currentPosition;
-	
-	if (allTouches.count == 4  )
-	{
+
+	if (allTouches.count == 4) {
 		if (!camera.recording)
 			CAM_StartRecording();
 		else 
 			CAM_StopRecording();
 	}
-		
-	
-	
-	for(int i=0 ; i <allTouches.count ; i++)
-	{
-		touch = [allTouches objectAtIndex:i];
-		currentPosition = [touch locationInView:self];
+
+	for(int i=0 ; i <allTouches.count ; i++) {
+
+        UITouch *touch = [allTouches objectAtIndex:i];
+        CGPoint currentPosition = [touch locationInView:self];
 		
 	//	NSLog(@"id: %d, posx=%.2f, posy=%.2f",i,currentPosition.x,currentPosition.y);
 		
-		if (currentPosition.y > 240)
-		{
+		if (currentPosition.y > 240) {
 			previousLookAround = currentPosition;
 		}
-		
-		
 	}
-
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
-	NSArray* allTouches = [touches allObjects];
-	UITouch *touch ;
-	CGPoint currentPosition ;
-	CGPoint previousPosition ;
-	
-	
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 
-	
-	for(int i=0 ; i <allTouches.count ; i++)
-	{
-		touch = [allTouches objectAtIndex:i];
-		
-		previousPosition= [touch previousLocationInView:self];
-		currentPosition = [touch locationInView:self];
+	NSArray* allTouches = [touches allObjects];
+
+	for(int i=0 ; i <allTouches.count ; i++) {
+
+        UITouch *touch = [allTouches objectAtIndex:i];
+        CGPoint previousPosition= [touch previousLocationInView:self];
+        CGPoint currentPosition = [touch locationInView:self];
 		
 		float deltaX = previousPosition.x - currentPosition.x;
 		float deltaY = previousPosition.y - currentPosition.y;
@@ -526,8 +404,7 @@ CGPoint previousLookAround;
 		
 		command_t command;
 		
-		if (previousPosition.x == previousLookAround.x && previousPosition.y == previousLookAround.y)
-		{
+		if (previousPosition.x == previousLookAround.x && previousPosition.y == previousLookAround.y) {
 			//this was originally a lookAround touch
 			//Comm_AddHead(-deltaY/100);
 			//Comm_AddPitch(deltaX/100);
@@ -543,9 +420,7 @@ CGPoint previousLookAround;
 			
 			
 			previousLookAround = currentPosition;
-		}
-		else	
-		{
+		} else {
 			//this was originally a move touch
 			command.type = COMMAND_TYPE_MOVE_NORTH_SOUTH;
 			command.value = -deltaX;
@@ -554,18 +429,14 @@ CGPoint previousLookAround;
 			command.type = COMMAND_TYPE_MOVE_EAST_WEST;
 			command.value = deltaY;
 			Comm_AddCommand(&command);
-			
-			
+
 			//Comm_AddForBackWard(-deltaX);
 			//Comm_Strafe(deltaY);
 		}
-		
-		
 	}
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	
 }
 

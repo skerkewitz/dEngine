@@ -38,46 +38,32 @@
 #include "commands.h"
 
 
-
-
-void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight)
-{
+void dEngine_Init(uchar rendererType,int viewPortWidth,int viewPortHeight) {
 	FS_InitFilesystem();
 	SCR_Init(rendererType,viewPortWidth,viewPortHeight);
 	
 	TEXT_InitTextureLibrary();
 
-	
 	FM_Init();
-	
 
-	
-	
 	MATLIB_LoadLibraries();
 	World_Init();
 	CAM_Init();
-	
-	
-	
+
 	Timer_resetTime();
 	Timer_Resume();
 }
 
-
-
-void dEngine_HostFrame(void)
-{
+void dEngine_HostFrame(void) {
 	
 	Timer_tick();
 
-	
 	Comm_Update();
 	CAM_Update();
 	
 	World_Update();
 	
 	SCR_RenderFrame();
-
 }
 
 uint num_screenshot=0;

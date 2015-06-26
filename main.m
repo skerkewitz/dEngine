@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "dEngineAppDelegate.h"
 
 int main(int argc, char *argv[]) {
     
@@ -24,8 +25,5 @@ int main(int argc, char *argv[]) {
 	}
 	setenv( "CWD", cwd, 1 );
 	
-    NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
-    int retVal = UIApplicationMain(argc, argv, nil, nil);
-    [pool release];
-    return retVal;
+    return UIApplicationMain(argc, argv, nil, NSStringFromClass([dEngineAppDelegate class]));
 }

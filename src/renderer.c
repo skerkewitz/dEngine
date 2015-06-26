@@ -60,35 +60,23 @@ ushort indicesString[256]  ;
 svertex_t verticesSprite[4];
 ushort indicesSprite[6] =  {1,2,3,1,3,4};
 
-void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight)
-{
-	int i;
-	svertex_t* v;
-	
-	//renderWidth =  768;
-	//renderHeight = 1024;
-	
-	//renderWidth =  320;
-	//renderHeight = 480;
-	
+void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight) {
+
     renderWidth =  viewPortWidth;
     renderHeight = viewPortHeight;
     
-	if (rendererType == GL_11_RENDERER)
-	{
+	if (rendererType == GL_11_RENDERER) {
 		printf("Running as openGL ES 1.1\n");
 		initFixedRenderer(&renderer);
 	}
 	
-	if (rendererType == GL_20_RENDERER)
-	{
+	if (rendererType == GL_20_RENDERER) {
 		printf("Running as openGL ES 2.0\n"); 
 		initProgrRenderer(&renderer);
 	}
 	
 	//Generate indices for text rendition
-	for(i=0; i < 42 ; i++)
-	{
+	for(int i=0; i < 42 ; i++) {
 		indicesString[i*6] = i*4;
 		indicesString[i*6+1] = i*4+1;
 		indicesString[i*6+2] = i*4+2;
@@ -100,7 +88,7 @@ void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight)
 	
 	
 	//Sprite stuff
-	v = verticesSprite;
+    svertex_t *v = verticesSprite;
 	//	4 3
 	//	1 2
 	/*1*/v->text[0] = 0 ; 	v->text[1] = 0; 	v->pos[0] = 0;				v->pos[1] = 0;				v++;
@@ -152,18 +140,13 @@ void DrawStats()
 	
 }
 
-void SCR_RenderFrame(void)
-{
+void SCR_RenderFrame(void) {
+
 	STATS_Begin();
-		
 	renderer.Set3D();
-	
 	renderer.RenderEntities();
-	
-	
-	
-	if (renderer.statsEnabled)
-	{
+
+	if (renderer.statsEnabled) {
 		renderer.Set2D();
 		DrawStats();
 	}
@@ -172,23 +155,17 @@ void SCR_RenderFrame(void)
 }
 
 
-inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,matrix_t projectionMatrix)
-{
-	float f  = (float)(1 / tan(fovy*DEG_TO_RAD/2));	
-	
-	
+inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,matrix_t projectionMatrix) {
+
+    float f  = (float)(1 / tan(fovy*DEG_TO_RAD/2));
+
 	projectionMatrix[0]= f/aspect;	projectionMatrix[4]= 0;	projectionMatrix[ 8]= 0;								projectionMatrix[12]= 0;
 	projectionMatrix[1]= 0; 		projectionMatrix[5]= f;	projectionMatrix[ 9]= 0;								projectionMatrix[13]= 0;
 	projectionMatrix[2]= 0;			projectionMatrix[6]= 0;	projectionMatrix[10]=(zFar+zNear)/(zNear-zFar) ;		projectionMatrix[14]= 2*(zFar*zNear)/(zNear-zFar);
 	projectionMatrix[3]= 0;			projectionMatrix[7]=0;	projectionMatrix[11]=-1;								projectionMatrix[15]= 0;
 }
 
-
-
-
-
-inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView)
-{
+inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView) {
 	vec3_t vN,vU,vV;
 	
     // determine the new n
@@ -199,7 +176,7 @@ inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fMod
 	
     // normalize both the u and n vectors
     normalize(vU) ; 
-		normalize(vN);
+	normalize(vN);
 	
     // determine v by crossing n and u
     vectorCrossProduct(vN,vU,vV);
@@ -212,8 +189,6 @@ inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fMod
 
 }
 
-
-void SCR_GetColorBuffer(uchar* data)
-{
+void SCR_GetColorBuffer(uchar* data) {
 	renderer.GetColorBuffer(data);
 }
