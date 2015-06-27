@@ -27,79 +27,54 @@
 
 #include "globals.h"
 #include "md5model.h"
-#include "filesystem.h"
-#include "texture.h"
-#include "renderer.h"
-#include "config.h"
-#include "material.h"
 #include "timer.h"
-
-md5_model_t md5file;
-md5_anim_t md5anim;
-
-int animated = 0;
-
-md5_joint_t *skeleton = NULL;
-
 
 /* vertex array related stuff */
 //int max_verts = 0;
 //int max_tris = 0;
-
-
-
-
-
 
 /**
  * Load an MD5 model from file.
  */
 int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 {
-	FILE *fp;
-	char buff[512];
+
+
 	int version;
 	int curr_mesh = 0;
 	int i,k,j,w;
-	char* fullPath;
+
 	md5_mesh_t* mesh;
-	md5_model_t *mdl ;
-	
-	mdl = &((md5_object_t*)entity->model)->md5Model;
-	
-	fullPath = (char*)malloc((strlen(filename)+1+strlen(FS_Gamedir()) + 1) * sizeof(char));
+
+    md5_model_t *mdl = &((md5_object_t*)entity->model)->md5Model;
+
+    char* fullPath = (char*)malloc((strlen(filename)+1+strlen(FS_Gamedir()) + 1) * sizeof(char));
 	fullPath[0] = '\0';
 	strcat(fullPath, FS_Gamedir());
 	strcat(fullPath, "/");
 	strcat(fullPath,filename);
-	
-	
-	fp = fopen (fullPath, "rb");
-	if (!fp)
-    {
+
+    FILE *fp = fopen (fullPath, "rb");
+	if (!fp) {
 		fprintf (stderr, "Error: couldn't open \"%s\"!\n", fullPath);
 		fprintf (stderr, "Error: couldn't open \"%s\"!\n", filename);
-		
 		return 0;
     }
-	
-	while (!feof (fp))
-    {
+
+    char buff[512];
+	while (!feof(fp)) {
 		/* Read whole line */
 		fgets (buff, sizeof (buff), fp);
 		
-		if (sscanf (buff, " MD5Version %d", &version) == 1)
-		{
-			if (version != 10)
-			{
+		if (sscanf (buff, " MD5Version %d", &version) == 1) {
+			if (version != 10) {
 				/* Bad version */
 				fprintf (stderr, "Error: bad model version\n");
 				fclose (fp);
 				return 0;
 			}
 		}
-		else if (sscanf (buff, " numJoints %d", &mdl->num_joints) == 1)
-		{
+        else if (sscanf (buff, " numJoints %d", &mdl->num_joints) == 1) {
 			if (mdl->num_joints > 0)
 			{
 				/* Allocate memory for base skeleton joints */
@@ -107,8 +82,7 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 				calloc (mdl->num_joints, sizeof (struct md5_joint_t));
 			}
 		}
-		else if (sscanf (buff, " numMeshes %d", &mdl->num_meshes) == 1)
-		{
+		else if (sscanf (buff, " numMeshes %d", &mdl->num_meshes) == 1) {
 			if (mdl->num_meshes > 0)
 			{
 				/* Allocate memory for meshes */
@@ -116,11 +90,9 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 				calloc (mdl->num_meshes, sizeof (struct md5_mesh_t));
 			}
 		}
-		else if (strncmp (buff, "joints {", 8) == 0)
-		{
+		else if (strncmp (buff, "joints {", 8) == 0) {
 			/* Read each joint */
-			for (i = 0; i < mdl->num_joints; ++i)
-			{
+			for (i = 0; i < mdl->num_joints; ++i) {
 				struct md5_joint_t *joint = &mdl->baseSkel[i];
 				
 				/* Read whole line */
@@ -129,15 +101,13 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 				if (sscanf (buff, "%s %d ( %f %f %f ) ( %f %f %f )",
 							joint->name, &joint->parent, &joint->pos[0],
 							&joint->pos[1], &joint->pos[2], &joint->orient[0],
-							&joint->orient[1], &joint->orient[2]) == 8)
-				{
+							&joint->orient[1], &joint->orient[2]) == 8) {
 					/* Compute the w component */
 					Quat_computeW (joint->orient);
 				}
 			}
 		}
-		else if (strncmp (buff, "mesh {", 6) == 0)
-		{
+		else if (strncmp (buff, "mesh {", 6) == 0) {
 			struct md5_mesh_t *mesh = &mdl->meshes[curr_mesh];
 			int vert_index = 0;
 			int tri_index = 0;
@@ -147,13 +117,11 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 			
 			mesh->bumpShader[0] = '\0';
 			
-			while ((buff[0] != '}') && !feof (fp))
-			{
+			while ((buff[0] != '}') && !feof (fp)) {
 				/* Read whole line */
 				fgets (buff, sizeof (buff), fp);
 				
-				if (strstr (buff, "shader "))
-				{
+				if (strstr (buff, "shader ")) {
 					int quote = 0, j = 0;
 					
 					/* Copy the shader name whithout the quote marks */
@@ -172,13 +140,11 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 					
 				}
 				
-				else if (strstr (buff, "bumpShader ") )
-				{
+				else if (strstr (buff, "bumpShader ") ) {
 					int quote = 0, j = 0;
 					
 					// Copy the shader name whithout the quote marks 
-					for (i = 0; i < sizeof (buff) && (quote < 2); ++i)
-					{
+					for (i = 0; i < sizeof (buff) && (quote < 2); ++i) {
 						if (buff[i] == '\"')
 							quote++;
 						
@@ -188,30 +154,24 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 					}
 				}
 			
-				else if (sscanf (buff, " numverts %d", &mesh->num_verts) == 1)
-				{
-					if (mesh->num_verts > 0)
-					{
+				else if (sscanf (buff, " numverts %d", &mesh->num_verts) == 1) {
+					if (mesh->num_verts > 0) {
 						/* Allocate memory for vertices */
 						mesh->vertices = (struct md5_vertex_t *)
 						malloc (sizeof (struct md5_vertex_t) * mesh->num_verts);
 					}
 					
 				}
-				else if (sscanf (buff, " numtris %d", &mesh->num_tris) == 1)
-				{
-					if (mesh->num_tris > 0)
-					{
+				else if (sscanf (buff, " numtris %d", &mesh->num_tris) == 1) {
+					if (mesh->num_tris > 0) {
 						/* Allocate memory for triangles */
 						mesh->triangles = (struct md5_triangle_t *)
 						malloc (sizeof (struct md5_triangle_t) * mesh->num_tris);
 					}
 					
 				}
-				else if (sscanf (buff, " numweights %d", &mesh->num_weights) == 1)
-				{
-					if (mesh->num_weights > 0)
-					{
+				else if (sscanf (buff, " numweights %d", &mesh->num_weights) == 1) {
+					if (mesh->num_weights > 0) {
 						/* Allocate memory for vertex weights */
 						mesh->weights = (struct md5_weight_t *)
 						malloc (sizeof (struct md5_weight_t) * mesh->num_weights);
@@ -253,25 +213,19 @@ int ReadMD5Model (const char *filename, entity_t* entity )//md5_model_t *mdl)
 	free(fullPath);
 	
 	//Load all textures
-	for(i = 0 ; i < mdl->num_meshes ; i++)
-	{
+	for(i = 0 ; i < mdl->num_meshes ; i++) {
 		mesh = &mdl->meshes[i];
-		
 		mesh->vertexArray = malloc (sizeof (vertex_t) * mesh->num_verts);
 		mesh->vertexIndices = malloc (sizeof (ushort) * mesh->num_tris * 3);
-		
-		
+
 		/* Setup vertex indices */
-		for (k = 0, w = 0; w < mesh->num_tris; w++)
-		{
-			for (j = 0; j < 3; j++,k++)
-				mesh->vertexIndices[k] = mesh->triangles[w].index[j];
+		for (k = 0, w = 0; w < mesh->num_tris; w++) {
+			for (j = 0; j < 3; j++,k++) {
+                mesh->vertexIndices[k] = mesh->triangles[w].index[j];
+            }
 		}
 	}
-	
-	
-	
-	
+
 	return 1;
 }
 
@@ -321,30 +275,22 @@ void FreeModel (md5_model_t *mdl)
  * Prepare a mesh for drawing.  Compute mesh's final vertex positions
  * given a skeleton.  Put the vertices in vertex arrays.
  */
-void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
-
-{
+void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton) {
 	int i, j;
 	const md5_weight_t *weight;
 	const md5_joint_t *joint ;
 	vec3_t tmpNormal,tmpVertex;
 	vec3_t normalAccumulator;
-	#ifdef TANGENT_ENABLED
 	vec3_t tmpTangent;
 	vec3_t tangentAccumulator;
-	#endif
-	
+
 	/* Setup vertices */
 	vertex_t* currentVertex = mesh->vertexArray ;
-	for (i = 0; i < mesh->num_verts; ++i)
-    {
+	for (i = 0; i < mesh->num_verts; ++i) {
 		vectorClear(currentVertex->pos);
 		vectorClear(normalAccumulator);
-		
-		#ifdef TANGENT_ENABLED
 		vectorClear(tangentAccumulator);
-		#endif
-		
+
 		// Calculate final vertex to draw with weights 
 		for (j = 0; j < mesh->vertices[i].count; j++)
 		{
@@ -371,17 +317,14 @@ void GenerateGPUVertices (md5_mesh_t *mesh, const  md5_joint_t *skeleton)
 		normalize(normalAccumulator);
 		vectorScale(normalAccumulator,32767,currentVertex->normal);
 		
-		#ifdef TANGENT_ENABLED
 		normalize(tangentAccumulator);
 		vectorScale(tangentAccumulator,32767,currentVertex->tangent);
-		#endif
-		
+
 		currentVertex++;
     }
 }
 
-void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)
-{
+void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton) {
 
 	int verticesCounter;
 	int weightCounter;
@@ -390,15 +333,13 @@ void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)
 	
 	vec3_t* normalAccumulator;
 	vec3_t* normalWeightAccumulator;
-	#ifdef TANGENT_ENABLED
 	vec3_t tangent;
 	float coef;
 	vec3_t jointSpaceTangent;
 	vec2_t st1,st2;
 	vec3_t* tangentAccumulator;
 	vec3_t* tangentWeightAccumulator;
-	#endif
-	
+
 	vertex_t* currentVertex = NULL;
 	md5_vertex_t* md5Vertex;
 	int facesCounter;
@@ -411,22 +352,18 @@ void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)
 	
 	normalAccumulator = calloc(mesh->num_verts, sizeof(vec3_t));
 	normalWeightAccumulator = calloc(mesh->num_weights, sizeof(vec3_t));
- 	#ifdef TANGENT_ENABLED
 	tangentAccumulator = calloc(mesh->num_verts, sizeof(vec3_t));
 	tangentWeightAccumulator  = calloc(mesh->num_weights, sizeof(vec3_t));
-	#endif
-	
+
 	//Set all textures coordinate once for all.
 	currentVertex = mesh->vertexArray;
-	for(verticesCounter=0 ; verticesCounter < mesh->num_verts ; verticesCounter++,currentVertex++)
-	{
+	for(verticesCounter=0 ; verticesCounter < mesh->num_verts ; verticesCounter++,currentVertex++) {
 		currentVertex->text[0] = mesh->vertices[verticesCounter].st[0];
 		currentVertex->text[1] = mesh->vertices[verticesCounter].st[1];
 	}
 	
 	currentFace = mesh->triangles;
-	for(facesCounter = 0; facesCounter < mesh->num_tris ; facesCounter++,currentFace++)
-	{
+	for(facesCounter = 0; facesCounter < mesh->num_tris ; facesCounter++,currentFace++) {
 		
 		// Normal part
 		vectorSubtract(mesh->vertexArray[currentFace->index[2]].pos , mesh->vertexArray[currentFace->index[0]].pos, v1);
@@ -457,67 +394,47 @@ void GenerateLightingInfo (const md5_mesh_t *mesh, md5_joint_t *skeleton)
 		#endif
 	}
 	
-	
-	for(verticesCounter=0 ; verticesCounter < mesh->num_verts ; verticesCounter++,currentVertex++)
-	{
+	for(verticesCounter=0 ; verticesCounter < mesh->num_verts ; verticesCounter++,currentVertex++) {
 		normalize(normalAccumulator[verticesCounter]);
-		#ifdef TANGENT_ENABLED			
 		normalize(tangentAccumulator[verticesCounter]);
-		#endif
 	}
 	
 	//Now we have all the normal for this model, but need to transform them in bone space for re-usage
 	// Translating the normal orientation from object to joint space and Store normals inside weights, 
 	md5Vertex = mesh->vertices;
 	currentVertex = mesh->vertexArray;
-	for(verticesCounter=0 ; verticesCounter < mesh->num_verts ; verticesCounter++,md5Vertex++)
-	{
-		for (weightCounter = 0; weightCounter < md5Vertex->count; weightCounter++)
-		{
+	for(verticesCounter=0 ; verticesCounter < mesh->num_verts ; verticesCounter++,md5Vertex++) {
+		for (weightCounter = 0; weightCounter < md5Vertex->count; weightCounter++) {
 			weight = &mesh->weights[md5Vertex->start + weightCounter];
 			joint  = &skeleton[weight->joint];
 			
 			multiplyByInvertQuaternion(normalAccumulator[verticesCounter],joint->orient,jointSpaceNormal);
 			vectorAdd(normalWeightAccumulator[md5Vertex->start + weightCounter],jointSpaceNormal,normalWeightAccumulator[md5Vertex->start + weightCounter]);
 						
-			#ifdef TANGENT_ENABLED			
 			multiplyByInvertQuaternion(tangentAccumulator[verticesCounter],joint->orient,jointSpaceTangent);
 			vectorAdd(tangentWeightAccumulator[md5Vertex->start + weightCounter],jointSpaceTangent,tangentWeightAccumulator[md5Vertex->start + weightCounter]);
-			#endif
-						
 		}
-		
 	}
 	
 	weight = mesh->weights;
-	for (weightCounter = 0; weightCounter < mesh->num_weights; weightCounter++,weight++)
-	{
+	for (weightCounter = 0; weightCounter < mesh->num_weights; weightCounter++,weight++) {
 		normalize(normalWeightAccumulator[weightCounter]);
 		vectorScale(normalWeightAccumulator[weightCounter],32767,weight->normal);
-		#ifdef TANGENT_ENABLED			
-			normalize(tangentWeightAccumulator[weightCounter]);
+
+		normalize(tangentWeightAccumulator[weightCounter]);
 		vectorScale(tangentWeightAccumulator[weightCounter],32767,weight->tangent);
-		#endif			
 	}
 	
 	free(normalAccumulator);
 	free(normalWeightAccumulator);
-	#ifdef TANGENT_ENABLED	
 	free(tangentAccumulator);
 	free(tangentWeightAccumulator);
-	#endif	
 }
 
-void MD5_Update(md5_object_t* md5Object)
-{
-	int currentFrame ;
-	md5_mesh_t* currentMesh;
-	float absoluteTimePointerAnim;
-	int i;
-	
-	absoluteTimePointerAnim = simulationTime/1000.0*md5Object->md5Anim.frameRate;
-	
-	currentFrame = ((int)absoluteTimePointerAnim)%md5Object->md5Anim.num_frames;
+void MD5_Update(md5_object_t* md5Object) {
+
+    float absoluteTimePointerAnim = (float) (simulationTime /1000.0 * md5Object->md5Anim.frameRate);
+    int currentFrame = ((int)absoluteTimePointerAnim)%md5Object->md5Anim.num_frames;
 	
 	InterpolateSkeletons (currentFrame,
 						  md5Object->md5Anim.num_frames,
@@ -526,9 +443,8 @@ void MD5_Update(md5_object_t* md5Object)
 						  md5Object->md5Anim.skelFrames,
 						  md5Object->md5Model.baseSkel);
 	
-	for(i = 0; i < md5Object->md5Model.num_meshes; i++)
-	{
-		currentMesh = &md5Object->md5Model.meshes[i];
-		GenerateGPUVertices (currentMesh,md5Object->md5Model.baseSkel);
+	for(int i = 0; i < md5Object->md5Model.num_meshes; i++) {
+        md5_mesh_t* currentMesh = &md5Object->md5Model.meshes[i];
+		GenerateGPUVertices(currentMesh, md5Object->md5Model.baseSkel);
 	}
 }

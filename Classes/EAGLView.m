@@ -109,14 +109,6 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
             renderer.materialQuality = MATERIAL_QUALITY_LOW;
         }
 
-		int vp_width = 320;
-        int vp_height = 480;
-
-        if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
-            vp_width = 780;
-            vp_height = 1024;
-        }      
-        
 		if (!fixedDesired) {
             context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
         }
@@ -124,6 +116,10 @@ char* screenShotDirectory = "/Users/fabiensanglard/Pictures/dEngine/";
         if (!context || ![EAGLContext setCurrentContext:context]) {
             return nil;
         }
+
+        CGRect rect = [[UIScreen mainScreen] bounds];
+        int vp_width = rect.size.width;
+        int vp_height = rect.size.height;
         dEngine_Init(GL_20_RENDERER,vp_width,vp_height);
 
 		

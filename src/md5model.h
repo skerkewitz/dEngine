@@ -36,8 +36,7 @@
 #include "material.h"
 #include "entities.h"
 
-typedef struct md5_joint_t
-{
+typedef struct md5_joint_t {
 	char name[64];
 	int parent;
 	vec3_t pos;
@@ -46,49 +45,38 @@ typedef struct md5_joint_t
 } md5_joint_t;
 
 
-typedef struct md5_vertex_t
-{
+typedef struct md5_vertex_t {
 	vec2short_t st;
 
 	int start; /* start weight */
 	int count; /* weight count */
-	
 } md5_vertex_t;
 
 
-typedef struct md5_triangle_t
-{
+typedef struct md5_triangle_t {
 	int index[3];
-	
 } md5_triangle_t;
 
 
-typedef struct md5_weight_t
-{
+typedef struct md5_weight_t {
 	int joint;
 	float bias;
 	
 	vec3_t pos;
 	
 	vec3short_t normal;
-	
-	// Only 3GS and shader capable need tangent for bumpMapping
-	#ifdef TANGENT_ENABLED
 	vec3short_t tangent;
-	#endif
 } md5_weight_t;
 
 
-typedef struct md5_bbox_t
-{
+typedef struct md5_bbox_t {
 	vec3_t min;
 	vec3_t max;
 	
 } md5_bbox_t;
 
 
-typedef struct md5_mesh_t
-{
+typedef struct md5_mesh_t {
 	md5_vertex_t *vertices;
 	md5_triangle_t *triangles;
 	md5_weight_t *weights;
@@ -102,25 +90,20 @@ typedef struct md5_mesh_t
 	
 	vertex_t* vertexArray ;
 	ushort* vertexIndices ;
-	
-	
-	
+
 } md5_mesh_t;
 
 
-typedef struct md5_model_t
-{
+typedef struct md5_model_t {
 	md5_joint_t *baseSkel;
 	md5_mesh_t *meshes;
-	
-	
+
 	int num_joints;
 	int num_meshes;
 } md5_model_t;
 
 
-typedef struct md5_anim_t
-{
+typedef struct md5_anim_t {
 	int num_frames;
 	int num_joints;
 	int frameRate;
@@ -130,23 +113,13 @@ typedef struct md5_anim_t
 	
 } md5_anim_t;
 
-
-
-typedef struct md5_object_t
-{
+typedef struct md5_object_t {
 	md5_model_t md5Model;
 	md5_anim_t  md5Anim;
-	
-	
+
 	uchar animated;
-	
 
-	
 } md5_object_t;
-
-
-
-
 
 int ReadMD5Model (const char *filename, entity_t* entity );
 void FreeModel (md5_model_t *mdl);

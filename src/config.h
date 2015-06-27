@@ -27,19 +27,8 @@
 
 #ifndef DE_CONFIG
 #define DE_CONFIG
-	
 
-#ifdef _ARM_ARCH_7
-	#define TANGENT_ENABLED 1
-#else
-	#ifdef TARGET_IPHONE_SIMULATOR
-		#define TANGENT_ENABLED 1
-	#else
-		#define TANGENT_ENABLED 0
-	#endif
-#endif
-
-
+#define TANGENT_ENABLED 1
 
 
 #endif

@@ -25,12 +25,10 @@
 
 #import "dEngineAppDelegate.h"
 #import "EAGLView.h"
-#import "camera.h"
 
 @implementation dEngineAppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions NS_AVAILABLE_IOS(3_0);
-{
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 	[[UIApplication sharedApplication] setStatusBarHidden:YES ];
 
     // create the base window
@@ -54,38 +52,29 @@
     return YES;
 }
 
-- (void) applicationWillResignActive:(UIApplication *)application
-{
+- (void) applicationWillResignActive:(UIApplication *)application {
 	[self.glView stopAnimation];
 }
 
-- (void) applicationDidBecomeActive:(UIApplication *)application
-{
+- (void) applicationDidBecomeActive:(UIApplication *)application {
 	[self.glView startAnimation];
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-	[self.glView stopAnimation];
-	
-	
-}
-
-- (void) stopEngineActivity
-{
+- (void)applicationWillTerminate:(UIApplication *)application {
 	[self.glView stopAnimation];
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application
-{
+- (void) stopEngineActivity {
+	[self.glView stopAnimation];
+}
+
+- (void)applicationDidEnterBackground:(UIApplication *)application {
     //No multi-tasking, when you die, you die. Period.
 	exit(0);
 	//[self stopEngineActivity];
-    
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application
-{
+- (void)applicationWillEnterForeground:(UIApplication *)application {
 	[self.glView startAnimation];
 }
 
