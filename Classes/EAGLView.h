@@ -32,7 +32,7 @@
 #include "../src/ItextureLoader.h";
 #include "../src/globals.h";
 
-
+#define MAX_FPS 1.0f/45.f
 
 /*
 This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.

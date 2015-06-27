@@ -165,11 +165,11 @@ inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,mat
 	projectionMatrix[3]= 0;			projectionMatrix[7]=0;	projectionMatrix[11]=-1;								projectionMatrix[15]= 0;
 }
 
-inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView) {
+inline void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView) {
 	vec3_t vN,vU,vV;
 	
     // determine the new n
-    vectorSubtract(vEye,vLookat,vN);
+    vectorSubtract(vEye, vLookat, vN);
 	
     // determine the new u by crossing with the up vector
     vectorCrossProduct(vUp, vN, vU) ;
@@ -179,13 +179,13 @@ inline  void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fMod
 	normalize(vN);
 	
     // determine v by crossing n and u
-    vectorCrossProduct(vN,vU,vV);
+    vectorCrossProduct(vN, vU, vV);
 	
     // create a model view matrix
-	fModelView[0] = vU[0];					fModelView[4] = vU[1];					fModelView[8] = vU[2];					fModelView[12] = - DotProduct(vEye,vU); 
-	fModelView[1] = vV[0];					fModelView[5] = vV[1];					fModelView[9] = vV[2];					fModelView[13] = - DotProduct(vEye,vV);
-	fModelView[2] = vN[0];					fModelView[6] = vN[1];					fModelView[10]= vN[2];					fModelView[14]=  - DotProduct(vEye,vN);
-	fModelView[3]=	0.0f;					fModelView[7]= 0.0f;					fModelView[11]= 0.0f;					fModelView[15]= 1.0f;
+	fModelView[0] = vU[0]; fModelView[4] = vU[1]; fModelView[8] = vU[2]; fModelView[12] = - DotProduct(vEye,vU);
+	fModelView[1] = vV[0]; fModelView[5] = vV[1]; fModelView[9] = vV[2]; fModelView[13] = - DotProduct(vEye,vV);
+	fModelView[2] = vN[0]; fModelView[6] = vN[1]; fModelView[10]= vN[2]; fModelView[14]=  - DotProduct(vEye,vN);
+	fModelView[3]=	0.0f;  fModelView[7]= 0.0f;	  fModelView[11]= 0.0f;	 fModelView[15]= 1.0f;
 
 }
 

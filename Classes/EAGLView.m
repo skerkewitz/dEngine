@@ -25,10 +25,8 @@
 //
 
 
-
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
-#import "dEngineAppDelegate.h"
 
 #import "EAGLView.h"
 #import "dEngine.h"

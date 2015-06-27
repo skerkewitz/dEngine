@@ -115,12 +115,10 @@ GLuint shadowMapTextureId;
 
 float shadowMapRation = 1.5f;
 
-int SRC_UseShader(shader_prog_t* shader)
-{
+int SRC_UseShader(shader_prog_t* shader) {
 	//if (currentShader == shader)
 	//	return 0;
-		
-	
+
 	STATS_AddShaderSwitch();
 	
 //	printf("[SRC_UseShader] Shader = %u\n",shader->prog);
@@ -134,20 +132,13 @@ int SRC_UseShader(shader_prog_t* shader)
 	return 1;
 }
 
+void CreateFBOandShadowMap() {
 
 
 
-void CreateFBOandShadowMap()
-{
-	GLenum status;
-	GLuint   depthRenderbuffer; 
-	
-	
 	glGenFramebuffers(1, &shadowFBOId);
 	glBindFramebuffer(GL_FRAMEBUFFER,shadowFBOId);
-	
-	
-	
+
 	glGenTextures(1, &shadowMapTextureId);
 	glBindTexture(GL_TEXTURE_2D, shadowMapTextureId);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); 
@@ -158,17 +149,14 @@ void CreateFBOandShadowMap()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, renderWidth*shadowMapRation, renderHeight*shadowMapRation, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D, shadowMapTextureId,0);
 	glBindTexture(GL_TEXTURE_2D, -1);
-	
+
+    GLuint   depthRenderbuffer;
 	glGenRenderbuffers(1, &depthRenderbuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer); 
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, renderWidth*shadowMapRation, renderHeight*shadowMapRation); 
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer); 
-	
-	
-	
-	
-	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	switch (status) {
 		case GL_FRAMEBUFFER_COMPLETE:						printf("GL_FRAMEBUFFER_COMPLETE\n");break;
 		case 0x8CDB:										printf("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n");break;
@@ -179,56 +167,38 @@ void CreateFBOandShadowMap()
 		default:											printf("Unknown issue (%x).\n",status);break;	
 	}	
 
-	
-	
 	//glBindFramebuffer(GL_FRAMEBUFFER,0);
 }
 
 
-GLuint LoadShader(const char *shaderSrcPath, GLenum type, uchar props) 
-{ 
-	GLuint shader; 
-	GLint compiled; 
-	GLchar* sources[9];
-	uchar i;
-	int j;
-	
+GLuint LoadShader(const char *shaderSrcPath, GLenum type, uchar props) {
+
 	//printf("Loading %s\n",shaderSrcPath);
-	
-	memset(sources, 0, 9 * sizeof(GLchar*));
+
+    GLchar* sources[9];
+    memset(sources, 0, 9 * sizeof(GLchar*));
 	
 	// Create the shader object 
-	shader = glCreateShader(type); 
-	
-
-	
-	if(shader == 0) 
-	{
+    GLuint shader = glCreateShader(type);
+	if(shader == 0) {
 		printf("Failed to created GL shader for '%s'\n",shaderSrcPath);
 		return 0; 
 	}
 	
-	const filehandle_t* shaderFile;
-	
-	shaderFile = FS_OpenFile(shaderSrcPath,"r");
-	
-	if (!shaderFile)
-	{
+	const filehandle_t* shaderFile = FS_OpenFile(shaderSrcPath,"r");
+	if (!shaderFile) {
 		printf("Could not load shader: %s\n",shaderSrcPath);
 		return 0;
 	}
 	
-	i= 1 ;
-	j= 0 ;
+	int j = 0 ;
+	uchar i = 1 ;
 	do {
-		
 		if ((i & props) == i)
 			sources[j] = ubserShaderDefines[j];
 		else 
 			sources[j] = ubserShaderUndefines[j] ;
-		
 
-		
 		i *= 2;
 		j++ ;
 	} while (j< 8) ;
@@ -240,23 +210,18 @@ GLuint LoadShader(const char *shaderSrcPath, GLenum type, uchar props)
 	
 	// Load the shader source 
 	glShaderSource(shader, 9, (const GLchar**)sources, NULL); 
-	
 
-	
-	
-	
 	// Compile the shader 
 	glCompileShader(shader); 
 	// Check the compile status 
+    GLint compiled;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 	
-	if(!compiled) 
-	{ 
+	if(!compiled) {
 		GLint infoLen = 0; 
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen); 
 		
-		if(infoLen > 1) 
-		{ 
+		if(infoLen > 1) {
 			char* infoLog = malloc(sizeof(char) * infoLen); 
 			glGetShaderInfoLog(shader, infoLen, NULL, infoLog); 
 			printf("Error processing '%s' compiling shader:\n%s\n",shaderSrcPath, infoLog); 
@@ -268,44 +233,33 @@ GLuint LoadShader(const char *shaderSrcPath, GLenum type, uchar props)
 	return shader; 
 }
 
-void LoadProgram(shader_prog_t* shaderProg,const char* vertexShaderPath, const char* fragmentShaderPath, uchar props)
-{
-	GLuint vertexShader; 
-	GLuint fragmentShader; 
-	
-	GLint linked;
-	
+void LoadProgram(shader_prog_t* shaderProg,const char* vertexShaderPath, const char* fragmentShaderPath, uchar props) {
 
-	
 	//Load simple shader
-	vertexShader = LoadShader(vertexShaderPath,GL_VERTEX_SHADER,props);
-	fragmentShader = LoadShader(fragmentShaderPath,GL_FRAGMENT_SHADER,props);
-	
-	
+    GLuint vertexShader = LoadShader(vertexShaderPath,GL_VERTEX_SHADER,props);
+    GLuint fragmentShader = LoadShader(fragmentShaderPath,GL_FRAGMENT_SHADER,props);
+
 	// Create the program object 
 	shaderProg->prog = glCreateProgram(); 
-	if(shaderProg->prog == 0) 
-	{
+	if(shaderProg->prog == 0) {
 		printf("Could not create GL program.");
 		return ; 
 	}
 	
 	glAttachShader(shaderProg->prog, vertexShader); 
 	glAttachShader(shaderProg->prog, fragmentShader);
-	
-	
+
 	// Link the program 
 	glLinkProgram(shaderProg->prog); 
 	
 	// Check the link status 
-	glGetProgramiv(shaderProg->prog, GL_LINK_STATUS, &linked); 
-	if(!linked) 
-	{ 
+    GLint linked;
+	glGetProgramiv(shaderProg->prog, GL_LINK_STATUS, &linked);
+	if(!linked) {
 		GLint infoLen = 0; 
 		glGetProgramiv(shaderProg->prog, GL_INFO_LOG_LENGTH, &infoLen); 
 		
-		if(infoLen > 1) 
-		{ 
+		if(infoLen > 1) {
 			char* infoLog = malloc(sizeof(char) * infoLen); 
 			glGetProgramInfoLog(shaderProg->prog, infoLen, NULL, infoLog); 
 			printf("Error linking program:\n%s\n", infoLog); 
@@ -318,25 +272,17 @@ void LoadProgram(shader_prog_t* shaderProg,const char* vertexShaderPath, const c
 	
 }
 
+void SRC_BindUberShader(uchar props) {
 
-void SRC_BindUberShader(uchar props)
-{
-	uchar res_props;
-	
-	res_props = props & renderer.props;
-
-	
-	if (!ubershaders[res_props])
-	{
+    uchar res_props = props & renderer.props;
+	if (!ubershaders[res_props]) {
 		currentShader = calloc(1,sizeof(shader_prog_t));
 		currentShader->props = res_props;
 		ubershaders[res_props] = currentShader ;
 		
 		//MATLIB_printProp(res_props);
 		LoadProgram(currentShader,"data/shaders/v_uber.glsl","data/shaders/f_uber.glsl",res_props);
-		
-		
-		
+
 		//Get all uniforms and attributes
 		
 		currentShader->vars[SHADER_MVT_MATRIX]				= glGetUniformLocation(currentShader->prog,"modelViewProjectionMatrix");
@@ -356,13 +302,10 @@ void SRC_BindUberShader(uchar props)
 		currentShader->vars[SHADER_UNI_MATERIAL_SHININESS]	= glGetUniformLocation(currentShader->prog,"materialShininess");
 		currentShader->vars[SHADER_TEXT_SPEC_SAMPLER]		= glGetUniformLocation(currentShader->prog,"s_specularMap");
 		currentShader->vars[SHADER_UNI_MAT_COL_SPECULAR]	= glGetUniformLocation(currentShader->prog,"matColorSpecular");
-		
 	}
 	
-	if (SRC_UseShader(ubershaders[res_props]) )
-	{
-		if ((currentShader->props & PROP_SHADOW) == PROP_SHADOW)
-		{
+	if (SRC_UseShader(ubershaders[res_props]) ) {
+		if ((currentShader->props & PROP_SHADOW) == PROP_SHADOW) {
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D,shadowMapTextureId);
 			glUniform1i ( currentShader->vars[SHADER_TEXT_SHADOWMAP_SAMPLER], 3 );
@@ -376,9 +319,7 @@ void SRC_BindUberShader(uchar props)
 		glEnableVertexAttribArray(currentShader->vars[SHADER_ATT_UV]);
 		glEnableVertexAttribArray(currentShader->vars[SHADER_ATT_VERTEX] );
 		glEnableVertexAttribArray(currentShader->vars[SHADER_ATT_NORMAL] );
-	
 
-	
 		//Setup light
 		glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_AMBIENT],1,light.ambient);
 		glUniform3fv(currentShader->vars[SHADER_UNI_LIGHT_COL_DIFFUSE],1,light.diffuse);
@@ -386,8 +327,7 @@ void SRC_BindUberShader(uchar props)
 	}
 }
 
-void SCR_CheckErrorsF(char* step, char* details)
-{
+void SCR_CheckErrorsF(char* step, char* details) {
 	GLenum err = glGetError();
 	switch (err) {
 		case GL_INVALID_ENUM:printf("Error GL_INVALID_ENUM %s, %s\n", step,details); break;
@@ -399,8 +339,7 @@ void SCR_CheckErrorsF(char* step, char* details)
 	}
 }
 
-void LoadAllShaders(void)
-{
+void LoadAllShaders(void) {
 	LoadProgram(&shaders[STRING_RENDER_SHADER], "data/shaders/v_text.glsl", "data/shaders/f_text.glsl", PROP_NULL);	
 	shaders[STRING_RENDER_SHADER].vars[SHADER_ATT_VERTEX] = glGetAttribLocation(shaders[STRING_RENDER_SHADER].prog,"a_vertex");
 	shaders[STRING_RENDER_SHADER].vars[SHADER_ATT_UV] = glGetAttribLocation(shaders[STRING_RENDER_SHADER].prog,"a_texcoord0");
@@ -413,21 +352,16 @@ void LoadAllShaders(void)
 
 	memset(ubershaders, 0, sizeof(shader_prog_t*));
 	//Uber shader instanciation will be loaded on the fly.
-	
 }
 
-
-
-void Set3D(void)
-{
+void Set3D(void) {
 	glClear (GL_COLOR_BUFFER_BIT |  GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 	renderer.isBlending = 0;
 }
 
-void StopRendition(void)
-{
+void StopRendition(void) {
 	lastId = -1;
 	lastBumpId = -1;
 	lastSpecId = -1;
@@ -435,11 +369,12 @@ void StopRendition(void)
 	currentShader = -1; ;
 }
 
-void UpLoadTextureToGPU(texture_t* texture)
-{
-	if (!texture || !texture->data || texture->textureId != 0)
-		return;
-	
+void UpLoadTextureToGPU(texture_t* texture) {
+
+	if (!texture || !texture->data || texture->textureId != 0) {
+        return;
+    }
+
 	glActiveTexture(GL_TEXTURE0);
 	glGenTextures(1, &texture->textureId);
 	glBindTexture(GL_TEXTURE_2D, texture->textureId);
@@ -461,14 +396,10 @@ void UpLoadTextureToGPU(texture_t* texture)
 	 
 }
 
-void SetTextures(material_t* material)
-{
-	unsigned int textureId;
-	
-	textureId = material->textures[TEXTURE_DIFFUSE]->textureId ;
-	
-	if (lastId != textureId)
-	{
+void SetTextures(material_t* material) {
+
+    unsigned int textureId = material->textures[TEXTURE_DIFFUSE]->textureId ;
+	if (lastId != textureId) {
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D,textureId);
 		glUniform1i ( currentShader->vars[SHADER_TEXT_COLOR_SAMPLER], 0 );
@@ -476,12 +407,10 @@ void SetTextures(material_t* material)
 		lastId = textureId;
 	}
 	
-	if ( (currentShader->props & PROP_BUMP) == PROP_BUMP)
-	{
+	if ( (currentShader->props & PROP_BUMP) == PROP_BUMP) {
 		textureId = material->textures[TEXTURE_BUMP]->textureId ;
 		
-		if (lastBumpId != textureId)
-		{
+		if (lastBumpId != textureId) {
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D,textureId);
 			glUniform1i ( currentShader->vars[SHADER_TEXT_BUMP_SAMPLER], 1 );
@@ -489,24 +418,20 @@ void SetTextures(material_t* material)
 		}
 	}
 	
-	if ( (currentShader->props & PROP_SPEC) == PROP_SPEC)
-	{
+	if ( (currentShader->props & PROP_SPEC) == PROP_SPEC) {
 		textureId = material->textures[TEXTURE_SPECULAR]->textureId ;
 		
-		if (lastSpecId != textureId)
-		{
+		if (lastSpecId != textureId) {
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D,textureId);
 			glUniform1i ( currentShader->vars[SHADER_TEXT_SPEC_SAMPLER], 2 );
 			lastSpecId = textureId;
 		}
 	}
-	
 }
 
 
-void SetTexture(unsigned int textureId)
-{
+void SetTexture(unsigned int textureId) {
 	if (lastId == textureId)
 		return;
 	
@@ -517,43 +442,32 @@ void SetTexture(unsigned int textureId)
 	lastId = textureId;
 }
 
-void RenderEntitiesMD5(void* md5Void)
-{
-	md5_object_t* md5Object;
-	md5_mesh_t* currentMesh;
-	int i;
-	
-	md5Object = (md5_object_t*)md5Void;
-	
-	
+void RenderEntitiesMD5(void* md5Void) {
+
+    md5_object_t* md5Object = (md5_object_t*)md5Void;
+
 	/* Draw each mesh of the model */	
-	for (i = 0; i < 1; i++)
-    {
-		currentMesh = &md5Object->md5Model.meshes[i];
+	for (int i = 0; i < 1; i++) {
+        md5_mesh_t* currentMesh = &md5Object->md5Model.meshes[i];
 		
-		if (!renderer.isRenderingShadow)
-		{
+		if (!renderer.isRenderingShadow) {
 			//RenderNormalsF( currentMesh);
 			glVertexAttribPointer(currentShader->vars[SHADER_ATT_NORMAL], 3, GL_SHORT, GL_TRUE,  sizeof(vertex_t), currentMesh->vertexArray->normal);
 			glVertexAttribPointer(currentShader->vars[SHADER_ATT_TANGENT], 3, GL_SHORT, GL_TRUE,  sizeof(vertex_t), currentMesh->vertexArray->tangent);	
 			glVertexAttribPointer(currentShader->vars[SHADER_ATT_UV], 2, GL_SHORT, GL_TRUE,  sizeof(vertex_t), currentMesh->vertexArray->text);			
 			STATS_AddTriangles(currentMesh->num_tris);
 		}
-		glVertexAttribPointer(currentShader->vars[SHADER_ATT_VERTEX], 3, GL_FLOAT, GL_FALSE,  sizeof(vertex_t), currentMesh->vertexArray->pos);
+
+        glVertexAttribPointer(currentShader->vars[SHADER_ATT_VERTEX], 3, GL_FLOAT, GL_FALSE,  sizeof(vertex_t), currentMesh->vertexArray->pos);
 		glDrawElements (GL_TRIANGLES, currentMesh->num_tris * 3, GL_UNSIGNED_SHORT, currentMesh->vertexIndices);
-		
     }
 }
 
-void RenderEntitiesOBJ(void* objVoid)
-{
+void RenderEntitiesOBJ(void* objVoid) {
 	
-	obj_t* obj;
+	obj_t* obj = (obj_t*)objVoid;
 	
-	obj = (obj_t*)objVoid;
-	
-	if (!renderer.isRenderingShadow)
-	{
+	if (!renderer.isRenderingShadow) {
 
 		//RenderNormalsF( currentMesh);	
 		glVertexAttribPointer(currentShader->vars[SHADER_ATT_TANGENT], 3, GL_SHORT, GL_TRUE,  sizeof(obj_vertex_t), obj->vertices[0].tangent);		
@@ -568,53 +482,40 @@ void RenderEntitiesOBJ(void* objVoid)
 	
 }
 
-void SetupCamera(void)
-{
+void SetupCamera(void) {
+
 	vec3_t vLookat;
-	
 	vectorAdd(camera.position,camera.forward,vLookat);
 	
 	gluLookAt(camera.position, vLookat, camera.up, modelViewMatrix);
-	
 	gluPerspective(camera.fov, camera.aspect,camera.zNear, camera.zFar, projectionMatrix);
-	
 }
 
 
-void ComputeInvModelMatrix(matrix_t matrix, matrix_t dest)
-{
-	
-	matrix_t invTranslation;
-	matrix_t invRotation;
-	
-	
+void ComputeInvModelMatrix(matrix_t matrix, matrix_t dest) {
+
+    matrix_t invTranslation;
 	invTranslation[0] = 1 ;	invTranslation[4] = 0 ;	invTranslation[8] = 0 ;		invTranslation[12] = -matrix[12] ;
 	invTranslation[1] = 0 ;	invTranslation[5] = 1 ;	invTranslation[9] = 0 ;		invTranslation[13] = -matrix[13] ;
 	invTranslation[2] = 0 ;	invTranslation[6] = 0 ;	invTranslation[10] = 1 ;	invTranslation[14] = -matrix[14] ;
 	invTranslation[3] = 0 ;	invTranslation[7] = 0 ;	invTranslation[11] = 0 ;	invTranslation[15] = 1 ;
-	
+
+    matrix_t invRotation;
 	invRotation[0] = matrix[0] ;		invRotation[4] = matrix[1] ;		invRotation[8] = matrix[2] ;		invRotation[12] = 0 ;
 	invRotation[1] = matrix[4] ;		invRotation[5] = matrix[5] ;		invRotation[9] = matrix[6] ;		invRotation[13] = 0 ;
 	invRotation[2] = matrix[8] ;		invRotation[6] = matrix[9] ;		invRotation[10] = matrix[10] ;		invRotation[14] = 0 ;
 	invRotation[3] = 0 ;				invRotation[7] = 0 ;				invRotation[11] = 0 ;				invRotation[15] = 1 ;
-	
-	
+
 	matrix_multiply(invRotation, invTranslation, dest);
 }
 
-void RenderEntities(void)
-{
-	int i;
-	entity_t* entity;
-	matrix_t inv_modelMatrix;
+void RenderEntities(void) {
+
 	vec4_t modelSpaceLightPos;
 	vec4_t modelSpaceCameraPos;
-	matrix_t tmp;
-	
-	
+
 	renderer.isRenderingShadow = ((renderer.props & PROP_SHADOW) == PROP_SHADOW) ;
-	if (renderer.isRenderingShadow)
-	{
+	if (renderer.isRenderingShadow) {
 		glCullFace(GL_FRONT);
 		glBindFramebuffer(GL_FRAMEBUFFER,shadowFBOId);
 		glClearColor(1.0,1.0,1.0,1.0);
@@ -627,10 +528,10 @@ void RenderEntities(void)
 		//Setup perspective and camera
 		gluPerspective(light.fov, camera.aspect,camera.zNear, camera.zFar, projectionMatrix);
 		gluLookAt(light.position, light.lookAt, light.upVector, modelViewMatrix);
-	
-		entity = map;
-		for(i=0; i < num_map_entities; i++,entity++)
-		{		
+
+        entity_t* entity = map;
+		for(int i=0; i < num_map_entities; i++,entity++) {
+            matrix_t tmp;
 			matrix_multiply(modelViewMatrix,entity->matrix, tmp);
 			matrix_multiply(projectionMatrix,tmp, modelViewProjectionMatrix);
 			glUniformMatrix4fv(currentShader->vars[SHADER_MVT_MATRIX]   ,1,GL_FALSE,modelViewProjectionMatrix);
@@ -651,25 +552,24 @@ void RenderEntities(void)
 		
 		glBindFramebuffer(GL_FRAMEBUFFER,renderer.mainFramebufferId);
 	}
-	
-	
-	
+
 	//Setup perspective and camera
 	SetupCamera();
+
+    entity_t* entity = map;
 	
-	entity = map;
-	
-	for(i=0; i < num_map_entities; i++,entity++)
-	{
+	for(int i=0; i < num_map_entities; i++,entity++) {
 		//if (entity->type != ENTITY_OBJ)
 		//	continue;
 		
 		SRC_BindUberShader(entity->material->prop);
-		
+
+        matrix_t tmp;
 		matrix_multiply(modelViewMatrix,entity->matrix, tmp);
 		matrix_multiply(projectionMatrix,tmp, modelViewProjectionMatrix);
 		glUniformMatrix4fv(currentShader->vars[SHADER_MVT_MATRIX]   ,1,GL_FALSE,modelViewProjectionMatrix);
-		
+
+        matrix_t inv_modelMatrix;
 		ComputeInvModelMatrix(entity->matrix, inv_modelMatrix);
 		
 		matrix_transform_vec4t(inv_modelMatrix, light.position, modelSpaceLightPos);
@@ -686,20 +586,16 @@ void RenderEntities(void)
 		
 		SetTextures(entity->material);
 		
-		if (entity->material->hasAlpha )
-		{
-			if (!renderer.isBlending)
-			{
+		if (entity->material->hasAlpha ) {
+			if (!renderer.isBlending) {
 				renderer.isBlending = 1;
 				glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				STATS_AddBlendingSwitch();
 			}
 		}
-		else
-		{
-			if (renderer.isBlending)
-			{
+		else {
+			if (renderer.isBlending) {
 				renderer.isBlending = 0;
 				glDisable(GL_BLEND);
 				STATS_AddBlendingSwitch();
@@ -708,22 +604,16 @@ void RenderEntities(void)
 		
 		glUniform1f(currentShader->vars[SHADER_UNI_MATERIAL_SHININESS], entity->material->shininess);
 		glUniform3fv(currentShader->vars[SHADER_UNI_MAT_COL_SPECULAR],1,entity->material->specularColor);
-		
-		
+
 		if (entity->type == ENTITY_OBJ)
 			RenderEntitiesOBJ(entity->model);
 		else
 			RenderEntitiesMD5(entity->model);
-		
-		
 	}
-	
 }
 
-void RenderString(svertex_t* vertices,ushort* indices, uint numIndices)
-{	
-	
-	
+void RenderString(svertex_t* vertices,ushort* indices, uint numIndices) {
+
 	glVertexAttribPointer(currentShader->vars[SHADER_ATT_VERTEX], 2, GL_SHORT, GL_FALSE,  sizeof(svertex_t), vertices->pos);
 	glVertexAttribPointer(currentShader->vars[SHADER_ATT_UV], 2, GL_FLOAT, GL_FALSE,  sizeof(svertex_t), vertices->text);			
 	//TODO CHANGE glDrawElements
@@ -731,42 +621,31 @@ void RenderString(svertex_t* vertices,ushort* indices, uint numIndices)
 	
 	//glDrawArrays(GL_TRIANGLES, 0, numVertices);
 	STATS_AddTriangles(numIndices/3);
-	
 }
 
-void SetupLighting(void)
-{
+void SetupLighting(void) {
 	//vec3_t cameraSpaceLightPos;
-	
 
-	
 	// Need to send the position in camera space, best practice is to use a normal matrix (transpose inverse) ....
 	// But who fucking cares ?
 //	matrix_multiplyVertexByMatrix(light.position,modelViewMatrix,cameraSpaceLightPos);
-	
-				
 }
 
 
-void Set2D(void)
-{
-	
-	float t1,t2,t3;
-	
+void Set2D(void) {
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
+
+	float t1 = -(renderWidth + -renderWidth)/ (float)(renderWidth  - -renderWidth);
+	float t2 = -(renderHeight+ -renderHeight)/(float)(renderHeight - -renderHeight);
+	float t3 = -(1 +  -1)/(1 - -1);
 	
-	
-	
-	t1 = -(renderWidth + -renderWidth)/ (float)(renderWidth  - -renderWidth);
-	t2 = -(renderHeight+ -renderHeight)/(float)(renderHeight - -renderHeight);
-	t3 = -(1 +  -1)/(1 - -1);
-	
-	modelViewProjectionMatrix[0] = 2.0f/ (renderWidth - - renderWidth )	; modelViewProjectionMatrix[4] = 0								; modelViewProjectionMatrix[8] = 0			; modelViewProjectionMatrix[12] =t1 ;
-	modelViewProjectionMatrix[1] = 0								; modelViewProjectionMatrix[5] = 2.0f/(renderHeight - -renderHeight); modelViewProjectionMatrix[9] = 0			; modelViewProjectionMatrix[13] = t2 ;
-	modelViewProjectionMatrix[2] = 0								; modelViewProjectionMatrix[6] = 0									; modelViewProjectionMatrix[10] = -2.0f/(1 - -1); modelViewProjectionMatrix[14] = t3;
-	modelViewProjectionMatrix[3] = 0								; modelViewProjectionMatrix[7] = 0									; modelViewProjectionMatrix[11] = 0			; modelViewProjectionMatrix[15] = 1  ;	
+	modelViewProjectionMatrix[0] = 2.0f/ (renderWidth - - renderWidth); modelViewProjectionMatrix[4] = 0								; modelViewProjectionMatrix[8] = 0			; modelViewProjectionMatrix[12] =t1 ;
+	modelViewProjectionMatrix[1] = 0								  ; modelViewProjectionMatrix[5] = 2.0f/(renderHeight - -renderHeight); modelViewProjectionMatrix[9] = 0			; modelViewProjectionMatrix[13] = t2 ;
+	modelViewProjectionMatrix[2] = 0								  ; modelViewProjectionMatrix[6] = 0									; modelViewProjectionMatrix[10] = -2.0f/(1 - -1); modelViewProjectionMatrix[14] = t3;
+	modelViewProjectionMatrix[3] = 0								  ; modelViewProjectionMatrix[7] = 0									; modelViewProjectionMatrix[11] = 0			; modelViewProjectionMatrix[15] = 1  ;
 	
 	SRC_UseShader(&shaders[STRING_RENDER_SHADER]);
 	glEnableVertexAttribArray(currentShader->vars[SHADER_ATT_UV]);
@@ -787,8 +666,7 @@ void Set2D(void)
 	 */
 }
 
-void RenderSprite(uint textureId, svertex_t* verticesSprite, uint* indicesSprite, uint numIndices)
-{
+void RenderSprite(uint textureId, svertex_t* verticesSprite, uint* indicesSprite, uint numIndices) {
 	SetTexture(textureId);
 	glVertexAttribPointer(currentShader->vars[SHADER_ATT_VERTEX], 2, GL_SHORT, GL_FALSE,  sizeof(svertex_t), verticesSprite->pos);
 	glVertexAttribPointer(currentShader->vars[SHADER_ATT_UV], 2, GL_FLOAT, GL_FALSE,  sizeof(svertex_t), verticesSprite->text);			
@@ -796,8 +674,7 @@ void RenderSprite(uint textureId, svertex_t* verticesSprite, uint* indicesSprite
 	glDrawElements (GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT,indicesSprite); //numIndices==6
 }
 
-void GetColorBuffer(uchar* data)
-{
+void GetColorBuffer(uchar* data) {
 	glReadPixels(0,0,renderWidth,renderHeight,GL_RGBA, GL_UNSIGNED_BYTE,data);
 }
 
