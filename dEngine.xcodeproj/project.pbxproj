@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		1D3623260D0F684500981E51 /* dEngineAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D3623250D0F684500981E51 /* dEngineAppDelegate.swift */; };
-		1D60589B0D05DD56006BFB54 /* main.swift_ in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.swift_ */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		28FD14FE0DC6FC130079059D /* EAGLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FD14FD0DC6FC130079059D /* EAGLView.swift */; };
@@ -52,7 +51,6 @@
 		28FD14FD0DC6FC130079059D /* EAGLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EAGLView.swift; sourceTree = "<group>"; };
 		28FD14FF0DC6FC520079059D /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		28FD15070DC6FC5B0079059D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		29B97316FDCFA39411CA2CEA /* main.swift_ */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.swift_; path = main.swift_; sourceTree = "<group>"; };
 		2D18CDD5106B44210028DF35 /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = material.h; sourceTree = "<group>"; };
 		2D18CDD6106B44210028DF35 /* material.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = material.m; sourceTree = "<group>"; };
 		2D2D554A10435D2100BEDC6E /* world.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = world.h; sourceTree = "<group>"; };
@@ -162,7 +160,6 @@
 			isa = PBXGroup;
 			children = (
 				32CA4F630368D1EE00C91783 /* dEngine_Prefix.pch */,
-				29B97316FDCFA39411CA2CEA /* main.swift_ */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -397,7 +394,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1D60589B0D05DD56006BFB54 /* main.swift_ in Sources */,
 				1D3623260D0F684500981E51 /* dEngineAppDelegate.swift in Sources */,
 				28FD14FE0DC6FC130079059D /* EAGLView.swift in Sources */,
 				2DF347D7102F5FCA0052FFFF /* dEngine.m in Sources */,

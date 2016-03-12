@@ -44,57 +44,55 @@ import UIKit;
 @UIApplicationMain
 class dEngineAppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?;
+    var window: UIWindow?
+    var glView: EAGLView?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 
         /* Create the base window. */
-        self.window = UIWindow(frame:UIScreen.mainScreen().bounds);
-        self.window!.backgroundColor = UIColor.whiteColor();
+        self.window = UIWindow(frame:UIScreen.mainScreen().bounds)
+        self.window!.backgroundColor = .whiteColor()
 
-        let uiViewController = UIViewController();
-//        self.glView = [EAGLView new];
-//        self.glView.frame =uiViewController.view.frame;
-//        [uiViewController.view addSubview:self.glView];
-//        self.glView.backgroundColor = [UIColor greenColor];
-//        uiViewController.view.backgroundColor = [UIColor redColor];
-//
+        let uiViewController = UIViewController()
+        self.glView = EAGLView()
+        self.glView!.frame = uiViewController.view.frame
+        uiViewController.view.addSubview(self.glView!)
+        self.glView!.backgroundColor = .greenColor()
+        uiViewController.view.backgroundColor = .redColor()
+
         self.window!.rootViewController = uiViewController;
-        self.window!.rootViewController!.view.backgroundColor = UIColor.yellowColor();
+        self.window!.rootViewController!.view.backgroundColor = UIColor.yellowColor()
 
-        self.window!.makeKeyAndVisible();
+        self.window!.makeKeyAndVisible()
 
-//        [self.glView startAnimation];
+        self.glView!.startAnimation()
 
         return true
     }
+
+    func applicationWillResignActive(application: UIApplication) {
+        self.glView?.stopAnimation()
+    }
+
+    func applicationDidBecomeActive(application: UIApplication) {
+        self.glView?.startAnimation()
+    }
+
+    func applicationWillTerminate(application: UIApplication) {
+        self.glView?.stopAnimation()
+    }
+
+    func stopEngineActivity() {
+        self.glView?.stopAnimation()
+    }
+
+    func applicationDidEnterBackground(application: UIApplication) {
+        // No multi-tasking, when you die, you die. Period.
+        exit(0);
+        //[self stopEngineActivity];
+    }
+
+    func applicationWillEnterForeground(application: UIApplication) {
+        self.glView?.startAnimation()
+    }
 }
-
-
-//- (void) applicationWillResignActive:(UIApplication *)application {
-//	[self.glView stopAnimation];
-//}
-//
-//- (void) applicationDidBecomeActive:(UIApplication *)application {
-//	[self.glView startAnimation];
-//}
-//
-//- (void)applicationWillTerminate:(UIApplication *)application {
-//	[self.glView stopAnimation];
-//}
-//
-//- (void) stopEngineActivity {
-//	[self.glView stopAnimation];
-//}
-//
-//- (void)applicationDidEnterBackground:(UIApplication *)application {
-//    //No multi-tasking, when you die, you die. Period.
-//	exit(0);
-//	//[self stopEngineActivity];
-//}
-//
-//- (void)applicationWillEnterForeground:(UIApplication *)application {
-//	[self.glView startAnimation];
-//}
-//
-

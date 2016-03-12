@@ -137,10 +137,7 @@ class EAGLView : UIView {
     var depthRenderbuffer: GLuint = 0 // GLuint
 
     var animating: Bool = false;
-    var displayLinkSupported: Bool = true;
-
-    var animationTimer: NSTimer?;
-    var displayLink: AnyObject?;
+    var displayLink: CADisplayLink?
 
     var animationFrameInterval: Int = 0;
 
@@ -163,7 +160,7 @@ class EAGLView : UIView {
         // Get the width and height of the image
         text.file = nil;
 
-        let name = String(text.path);
+        let name = String.fromCString(text.path)!
 
         //NSString* name = [[NSString alloc] initWithCString:text->path encoding:NSASCIIStringEncoding];
 
@@ -201,91 +198,61 @@ class EAGLView : UIView {
         }
     }
 
-//
-//
+    convenience init () {
+        self.init(frame:CGRect.zero)
+    }
 
+    required init(coder aDecoder: NSCoder) {
+        fatalError("This class does not support NSCoding")
+    }
+
+
+    //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
+    override init (frame : CGRect) {
+        super.init(frame : frame)
+
+        // Get the layer
+        let eaglLayer: CAEAGLLayer = self.layer as! CAEAGLLayer
+        eaglLayer.opaque = true;
+        eaglLayer.drawableProperties = [
+            kEAGLDrawablePropertyRetainedBacking : false,
+            kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8
+        ]
+
+        //Set stats enabled
+        let userDefaults = NSUserDefaults.standardUserDefaults()
+        renderer.statsEnabled = 1 // [@"1" isEqualToString:[userDefaults stringForKey:@"StatisticsEnabled"]];
+
+        renderer.materialQuality = 1 // MATERIAL_QUALITY_HIGH;
+        //renderer.materialQuality = 0 // MATERIAL_QUALITY_LOW;
+
+        context = EAGLContext(API: .OpenGLES3)
+        EAGLContext.setCurrentContext(context)
+
+        let rect = UIScreen.mainScreen().bounds
+        let vp_width = rect.size.width
+        let vp_height = rect.size.height
+
+//        #define GL_11_RENDERER 0
+//        #define GL_20_RENDERER 1
+        dEngine_Init(1 /*GL_20_RENDERER*/, Int32(vp_width), Int32(vp_height))
+
+//        renderer.props |= PROP_SHADOW
+//        //renderer.props &= ~PROP_SHADOW
 //
+//        renderer.props |= PROP_BUMP
+//        //renderer.props &= ~PROP_BUMP ;
 //
-////The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
-//- (id)init {
-//
-//    if ((self = [super init])) {
-//
-//		eaglview = self;
-//
-//        // Get the layer
-//        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-//
-//        eaglLayer.opaque = YES;
-//        eaglLayer.drawableProperties = @{
-//                kEAGLDrawablePropertyRetainedBacking : @NO,
-//                //kEAGLColorFormatRGBA8,
-//                kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8};
-//
-//		//Set stats enabled
-//        NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-//        renderer.statsEnabled = [@"1" isEqualToString:[userDefaults stringForKey:@"StatisticsEnabled"]];
-//
-//        NSString *rendererType = [userDefaults stringForKey:@"RendererType"];
-//		bool fixedDesired = [@"0" isEqualToString:rendererType];
-//
-//		//Set the texture quality
-//        if ([userDefaults stringForKey:@"MaterialQuality"] == nil
-//                || [[userDefaults stringForKey:@"MaterialQuality"] intValue] ) {
-//            renderer.materialQuality = MATERIAL_QUALITY_HIGH;
-//        } else {
-//            renderer.materialQuality = MATERIAL_QUALITY_LOW;
-//        }
-//
-//		if (!fixedDesired) {
-//            context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
-//        }
-//
-//        if (!context || ![EAGLContext setCurrentContext:context]) {
-//            return nil;
-//        }
-//
-//        CGRect rect = [[UIScreen mainScreen] bounds];
-//        int vp_width = rect.size.width;
-//        int vp_height = rect.size.height;
-//        dEngine_Init(GL_20_RENDERER,vp_width,vp_height);
-//
-//
-//		//Set shadow enabled/disabled
-//		//Set shadow type
-//		if ([userDefaults stringForKey:@"ShadowType"] == nil
-//                || [[userDefaults stringForKey:@"ShadowType"] intValue])
-//			renderer.props |= PROP_SHADOW ;
-//		else
-//			renderer.props &= ~PROP_SHADOW ;
-//
-//
-//		if ([userDefaults stringForKey:@"NormalMappingEnabled"] == nil
-//                || [[userDefaults stringForKey:@"NormalMappingEnabled"] intValue])
-//			renderer.props |= PROP_BUMP ;
-//		else
-//			renderer.props &= ~PROP_BUMP ;
-//
-//
-//		if ([userDefaults stringForKey:@"SpecularMappingEnabled"] == nil
-//                || [[userDefaults stringForKey:@"SpecularMappingEnabled"] intValue])
-//			renderer.props |= PROP_SPEC ;
-//		else
-//			renderer.props &= ~PROP_SPEC ;
-//
-//		//NSLog(@"Engine properties");
-//		//MATLIB_printProp(renderer.props);
-//
-//		animating = FALSE;
-//		//displayLinkSupported = FALSE;
-//		displayLink = nil;
-//		animationTimer = nil;
-//		displayLinkSupported = TRUE;
-//        [self setAnimationFrameInterval:1];
-//    }
-//
-//    return self;
-//}
+//        renderer.props |= PROP_SPEC ;
+//        //renderer.props &= ~PROP_SPEC ;
+
+        Swift.print("Engine properties");
+        //MATLIB_printProp(renderer.props);
+
+        animating = false;
+        displayLink = nil;
+        animationFrameInterval = 1
+    }
 
     var triggeredPlay = false
 
@@ -386,42 +353,23 @@ class EAGLView : UIView {
         }
     }
 
-//
-//- (void)startAnimation {
-//    if (!animating) {
-//		if (displayLinkSupported) {
-//
-//			// CADisplayLink is API new to iPhone SDK 3.1. Compiling against earlier versions will result in a warning,
-//			// but can be dismissed if the system version runtime check for CADisplayLink exists in -initWithCoder:.
-//			// The runtime check ensures this code will not be called in system versions earlier than 3.1.
-//			displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(drawView:)];
-//			[displayLink setFrameInterval:animationFrameInterval];
-//			[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-//		} else {
-//            animationTimer = [NSTimer scheduledTimerWithTimeInterval:(NSTimeInterval)((MAX_FPS) * animationFrameInterval)
-//                                                              target:self
-//                                                            selector:@selector(drawView:)
-//                                                            userInfo:nil
-//                                                             repeats:TRUE];
-//        }
-//
-//		animating = TRUE;
-//	}
-//}
-//
-//- (void)stopAnimation {
-//	if (animating) {
-//		if (displayLinkSupported) {
-//			[displayLink invalidate];
-//			displayLink = nil;
-//		} else {
-//			[animationTimer invalidate];
-//			animationTimer = nil;
-//		}
-//		animating = FALSE;
-//	}
-//}
-//
+
+    func startAnimation() {
+        if (!animating) {
+            displayLink = CADisplayLink(target:self, selector:"drawView:")
+            displayLink?.frameInterval = animationFrameInterval
+            displayLink?.addToRunLoop(NSRunLoop.currentRunLoop(), forMode:NSDefaultRunLoopMode)
+            animating = true;
+        }
+    }
+
+    func stopAnimation() {
+        if (animating) {
+            displayLink?.invalidate()
+            displayLink = nil;
+            animating = false;
+        }
+    }
 
 //
 ////Native methods
