@@ -41,15 +41,15 @@ typedef struct  {
 	uint textureId;
 	char* path;
 	
-	ubyte* data;
+	void *data; //ubyte* data;
 	int dataLength; //compressed texture need to provide their size
 	
 	filehandle_t* file;
 	
-	uint width;
-	uint height;
-	uint bpp;
-	uint format;
+	int width;
+	int height;
+	int bpp;
+	int format;
 	
 } texture_t;
 

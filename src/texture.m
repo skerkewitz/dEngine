@@ -24,36 +24,34 @@
  *
  */
 
+
+#import "dEngine-Swift.h"
+
 #include "texture.h"
 #include "ItextureLoader.h"
 #include "filesystem.h"
+
 
 //Cache
 #define HASH_MAX_VALUE 1024
 tex_cache_bucket_t* tex_hashtable[HASH_MAX_VALUE];
 
-void TEXT_InitTextureLibrary(void)
-{
-	int i;
-	
-	for (i=0 ; i < HASH_MAX_VALUE ; i++)
+void TEXT_InitTextureLibrary(void) {
+	for (int i=0 ; i < HASH_MAX_VALUE ; i++) {
 		tex_hashtable[i] = NULL;
+	}
 }
 
-void TEXT_ClearTextureLibrary(void)
-{
+void TEXT_ClearTextureLibrary(void) {
 	printf("TEXT_CleanTextureLibrary IS NOT IMPLEMENTED !! DO IT !!!.\n");
 }
 
 
-W32 tex_strhash( const char *string )
-{
+W32 tex_strhash( const char *string ) {
 	W32 hash = *string;
 	
-	if( hash )
-	{
-		for( string += 1; *string != '\0'; ++string )
-		{
+	if( hash ) {
+		for( string += 1; *string != '\0'; ++string ) {
 			hash = (hash << 5) - hash + *string;
 		}
 	}
@@ -63,21 +61,17 @@ W32 tex_strhash( const char *string )
 
 
 
-texture_t* TEX_GetTexture(char* mtlName)
-{ 
-	unsigned int hashValue ;
-	tex_cache_bucket_t* bucket;
+texture_t* TEX_GetTexture(char* mtlName) {
+
+	unsigned int hashValue= tex_strhash(mtlName) % HASH_MAX_VALUE;
+	tex_cache_bucket_t* bucket = tex_hashtable[hashValue];
 	
-	hashValue= tex_strhash(mtlName) % HASH_MAX_VALUE;
-	
-	bucket = tex_hashtable[hashValue];
-	
-	if (bucket == NULL)
+	if (bucket == NULL) {
 		return NULL;
-	else
-	{
-		while (strcmp(bucket->texture->path,mtlName) && bucket->next != NULL)
+	} else {
+		while (strcmp(bucket->texture->path,mtlName) && bucket->next != NULL) {
 			bucket = bucket->next;
+		}
 	}
 	
 	if (!strcmp(bucket->texture->path,mtlName))
@@ -116,7 +110,11 @@ void TEX_PutTexture(texture_t* texture)
 	
 }
 
+void loadNativePNG(texture_t* t) {
+	[EAGLView loadNativePNG:t];
+}
 
+extern void loadNativePVRT(texture_t* t);
 void TEX_LoadTexture(texture_t* tmpTex)
 {
 	char* extension; 

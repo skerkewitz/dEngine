@@ -29,7 +29,7 @@
 
 #include "texture.h"
 
-void loadNativePNG(texture_t* tmpTex);
-void loadNativePVRT(texture_t* tmpTex);
+//void loadNativePNG(texture_t* tmpTex);
+//void loadNativePVRT(texture_t* tmpTex);
 
 #endif

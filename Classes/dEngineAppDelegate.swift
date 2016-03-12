@@ -49,10 +49,10 @@ class dEngineAppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 
         /* Create the base window. */
-        self.window = UIWindow.init(frame:UIScreen.mainScreen().bounds);
+        self.window = UIWindow(frame:UIScreen.mainScreen().bounds);
         self.window!.backgroundColor = UIColor.whiteColor();
 
-        let uiViewController = UIViewController.init();
+        let uiViewController = UIViewController();
 //        self.glView = [EAGLView new];
 //        self.glView.frame =uiViewController.view.frame;
 //        [uiViewController.view addSubview:self.glView];

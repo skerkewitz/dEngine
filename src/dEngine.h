@@ -24,24 +24,17 @@
  *
  */
 
+#pragma once
 
-#ifndef DE_MAIN
-#define DE_MAIN 1
-
-
-
+@import Foundation;
 
 #include "globals.h"
 #include "renderer.h"
 
-
 void dEngine_Init(uchar rendererType, int viewPortWidth, int viewPortHeight);
 void dEngine_HostFrame(void);
-void dEngine_WriteScreenshot(char* directory, uchar rotate);
+void dEngine_WriteScreenshot(NSString *directory, BOOL rotate);
 
-
-
-#endif
 
 /*		TODO
 	 

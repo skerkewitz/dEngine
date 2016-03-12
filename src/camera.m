@@ -286,13 +286,12 @@ camera_frame_t* CAM_ReadFrameFromFile(void)
 	return frame;
 }
 
-void CAM_StartPlaying(char* filename)
-{
+void CAM_StartPlaying(NSString *filename) {
 	uint i;	
 	filehandle_t* file ;
 	uchar isCP1 = 0;
 	
-	file = FS_OpenFile(filename, "rt");
+	file = FS_OpenFile(filename.UTF8String, "rt");
 	
 	if (!file)
 		return;
@@ -327,7 +326,7 @@ void CAM_StartPlaying(char* filename)
 							  
 	camera.playing = 1;
 	camera.path.currentFrame = camera.path.frames;
-	strcpy(camera.recordFilename, filename);
+	strcpy(camera.recordFilename, filename.UTF8String);
 	simulationTime = camera.path.frames[0].time;
 	
 	FS_CloseFile(file);

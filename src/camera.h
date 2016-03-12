@@ -24,8 +24,9 @@
  *
  */
 
-#ifndef DE_CAMERA
-#define DE_CAMERA
+#pragma once
+
+@import Foundation;
 
 #include "globals.h"
 #include "math.h"
@@ -78,10 +79,6 @@ typedef struct
 	char  recordFilename[256];
 } camera_t;
 
-
-
-
-
 extern camera_t camera;
 
 void CAM_Init();
@@ -90,6 +87,4 @@ void CAM_Update(void);
 
 void CAM_StartRecording();
 void CAM_StopRecording();
-void CAM_StartPlaying(char* filename);
-
-#endif
+void CAM_StartPlaying(NSString *filename);

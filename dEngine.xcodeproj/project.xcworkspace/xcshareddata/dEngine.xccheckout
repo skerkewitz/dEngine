@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>BACC0FEA-BE16-4E47-B0CD-D4D3624C1C79</string>
+	<key>IDESourceControlProjectName</key>
+	<string>project</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>F2BB1B5C35FE3F38C7B40F1C06ECA3BBF8496B93</key>
+		<string>https://github.com/skerkewitz/dEngine.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>dEngine.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>F2BB1B5C35FE3F38C7B40F1C06ECA3BBF8496B93</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/skerkewitz/dEngine.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>F2BB1B5C35FE3F38C7B40F1C06ECA3BBF8496B93</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>F2BB1B5C35FE3F38C7B40F1C06ECA3BBF8496B93</string>
+			<key>IDESourceControlWCCName</key>
+			<string>dEngine</string>
+		</dict>
+	</array>
+</dict>
+</plist>
