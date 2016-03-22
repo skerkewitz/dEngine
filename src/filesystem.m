@@ -309,12 +309,9 @@ void FS_DirectoryPath(  char *in, char *out )
         *out-- = *s--;
 }
 
-char* FS_GetExtensionAddress(char* string)
-{
-    char* extension;
+char* FS_GetExtensionAddress(char* string) {
 
-    extension = &string[strlen(string)-1];
-
+    char *extension = &string[strlen(string)-1];
     while(*extension != '.' && extension != string)
         extension--;
 

@@ -146,11 +146,11 @@ class EAGLView : UIView {
         return CAEAGLLayer.self;
     }
 
-    @objc class func loadNativePNG(texture: UnsafePointer<texture_t>) -> Void {
-        loadTexture(texture.memory);
+    @objc class func loadNativePNG(texture: UnsafeMutablePointer<texture_t>) {
+        loadTexture(texture);
     }
 
-    class func loadTexture(var text: texture_t) {
+    class func loadTexture(texture: UnsafeMutablePointer<texture_t>) {
 
 //	//GLubyte *spriteData;
 //	//size_t	width = 1, height=1 , bpp=0 , bytePerRow = 0;
@@ -158,9 +158,9 @@ class EAGLView : UIView {
 
 
         // Get the width and height of the image
-        text.file = nil;
+        texture.memory.file = nil;
 
-        let name = String.fromCString(text.path)!
+        let name = String.fromCString(texture.memory.path)!
 
         //NSString* name = [[NSString alloc] initWithCString:text->path encoding:NSASCIIStringEncoding];
 
@@ -168,31 +168,31 @@ class EAGLView : UIView {
         let spriteImage: CGImageRef? = uiImage!.CGImage;
 
         if let sprite = spriteImage {
-            text.width = Int32(CGImageGetWidth(sprite));
-            text.height = Int32(CGImageGetHeight(sprite));
-            text.bpp = Int32(CGImageGetBitsPerPixel(sprite));
+            texture.memory.width = Int32(CGImageGetWidth(sprite));
+            texture.memory.height = Int32(CGImageGetHeight(sprite));
+            texture.memory.bpp = Int32(CGImageGetBitsPerPixel(sprite));
 
             // (ubyte *)calloc(text->width * text->height * 4,sizeof(ubyte));
-            text.data = calloc(Int(text.width * text.height * 4), Int(sizeof(UInt8)));
+            texture.memory.data = calloc(Int(texture.memory.width * texture.memory.height * 4), Int(sizeof(UInt8)));
 
             var spriteContext: CGContextRef?;
-            if (text.bpp == 24) {
-                text.format = TEXTURE_GL_RGB;
-                print("TEXTURE_GL_RGB, bpp=\(text.bpp)");
-                spriteContext = CGBitmapContextCreate(text.data,
-                        Int(text.width), Int(text.height),
-                        8, Int(text.width * 4),
+            if (texture.memory.bpp == 24) {
+                texture.memory.format = TEXTURE_GL_RGB;
+                print("TEXTURE_GL_RGB, bpp=\(texture.memory.bpp)");
+                spriteContext = CGBitmapContextCreate(texture.memory.data,
+                        Int(texture.memory.width), Int(texture.memory.height),
+                        8, Int(texture.memory.width * 4),
                         CGImageGetColorSpace(sprite), CGImageAlphaInfo.NoneSkipLast.rawValue);
             } else {
-                text.format = TEXTURE_GL_RGBA;
-                print("TEXTURE_GL_RGBA, bpp=\(text.bpp)");
-                spriteContext = CGBitmapContextCreate(text.data,
-                        Int(text.width), Int(text.height),
-                        8, Int(text.width * 4),
+                texture.memory.format = TEXTURE_GL_RGBA;
+                print("TEXTURE_GL_RGBA, bpp=\(texture.memory.bpp)");
+                spriteContext = CGBitmapContextCreate(texture.memory.data,
+                        Int(texture.memory.width), Int(texture.memory.height),
+                        8, Int(texture.memory.width * 4),
                         CGImageGetColorSpace(sprite), CGImageAlphaInfo.PremultipliedLast.rawValue);
             }
 
-            CGContextDrawImage(spriteContext, CGRectMake(CGFloat(0.0), CGFloat(0.0), CGFloat(text.width), CGFloat(text.height)), sprite);
+            CGContextDrawImage(spriteContext, CGRectMake(CGFloat(0.0), CGFloat(0.0), CGFloat(texture.memory.width), CGFloat(texture.memory.height)), sprite);
         } else {
             print("Error: [PNG Loader] could not load image with \(name)");
         }
@@ -223,8 +223,8 @@ class EAGLView : UIView {
         let userDefaults = NSUserDefaults.standardUserDefaults()
         renderer.statsEnabled = 1 // [@"1" isEqualToString:[userDefaults stringForKey:@"StatisticsEnabled"]];
 
-        renderer.materialQuality = 1 // MATERIAL_QUALITY_HIGH;
-        //renderer.materialQuality = 0 // MATERIAL_QUALITY_LOW;
+        //renderer.materialQuality = 1 // MATERIAL_QUALITY_HIGH;
+        renderer.materialQuality = 0 // MATERIAL_QUALITY_LOW;
 
         context = EAGLContext(API: .OpenGLES3)
         EAGLContext.setCurrentContext(context)
@@ -237,6 +237,15 @@ class EAGLView : UIView {
 //        #define GL_20_RENDERER 1
         dEngine_Init(1 /*GL_20_RENDERER*/, Int32(vp_width), Int32(vp_height))
 
+//        #define PROP_BUMP      0x01
+//        #define PROP_SPEC      0x02
+//        #define PROP_DIFF	   0x04
+//        #define PROP_UNDEF1    0x08
+//        #define PROP_UNDEF2    0x10
+//        #define PROP_UNDEF3	   0x20
+//        #define PROP_UNDEF	   0x40
+//        #define PROP_SHADOW    0x80
+
 //        renderer.props |= PROP_SHADOW
 //        //renderer.props &= ~PROP_SHADOW
 //
@@ -245,6 +254,8 @@ class EAGLView : UIView {
 //
 //        renderer.props |= PROP_SPEC ;
 //        //renderer.props &= ~PROP_SPEC ;
+
+        renderer.props = 0x01 | 0x02 | 0x04
 
         Swift.print("Engine properties");
         //MATLIB_printProp(renderer.props);
