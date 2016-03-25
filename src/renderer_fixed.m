@@ -25,7 +25,6 @@
  */
 
 #include "renderer_fixed.h"
-#include "dEngine.h"
 #include "camera.h"
 #include <OpenGLES/ES1/gl.h>
 #include "stats.h"

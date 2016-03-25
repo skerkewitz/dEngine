@@ -141,6 +141,8 @@ class EAGLView : UIView {
 
     var animationFrameInterval: Int = 0;
 
+    let engine: Engine
+
     /* You must implement this method */
     @objc override class func layerClass() -> AnyClass {
         return CAEAGLLayer.self;
@@ -209,18 +211,9 @@ class EAGLView : UIView {
 
     //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
     override init (frame : CGRect) {
-        super.init(frame : frame)
-
-        // Get the layer
-        let eaglLayer: CAEAGLLayer = self.layer as! CAEAGLLayer
-        eaglLayer.opaque = true;
-        eaglLayer.drawableProperties = [
-            kEAGLDrawablePropertyRetainedBacking : false,
-            kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8
-        ]
 
         //Set stats enabled
-        let userDefaults = NSUserDefaults.standardUserDefaults()
+        //let userDefaults = NSUserDefaults.standardUserDefaults()
         renderer.statsEnabled = 1 // [@"1" isEqualToString:[userDefaults stringForKey:@"StatisticsEnabled"]];
 
         //renderer.materialQuality = 1 // MATERIAL_QUALITY_HIGH;
@@ -230,12 +223,10 @@ class EAGLView : UIView {
         EAGLContext.setCurrentContext(context)
 
         let rect = UIScreen.mainScreen().bounds
-        let vp_width = rect.size.width
-        let vp_height = rect.size.height
 
 //        #define GL_11_RENDERER 0
 //        #define GL_20_RENDERER 1
-        dEngine_Init(1 /*GL_20_RENDERER*/, Int32(vp_width), Int32(vp_height))
+        self.engine = Engine(rendererType: 1 /*GL_20_RENDERER*/, viewPort: rect.size)
 
 //        #define PROP_BUMP      0x01
 //        #define PROP_SPEC      0x02
@@ -263,6 +254,16 @@ class EAGLView : UIView {
         animating = false;
         displayLink = nil;
         animationFrameInterval = 1
+
+        super.init(frame : frame)
+
+        // Get the layer
+        let eaglLayer: CAEAGLLayer = self.layer as! CAEAGLLayer
+        eaglLayer.opaque = true;
+        eaglLayer.drawableProperties = [
+                kEAGLDrawablePropertyRetainedBacking : false,
+                kEAGLDrawablePropertyColorFormat : kEAGLColorFormatRGBA8
+        ]
     }
 
     var triggeredPlay = false
@@ -281,12 +282,12 @@ class EAGLView : UIView {
             }
         }
 
-        dEngine_HostFrame();
+        self.engine.hostFrame()
 
         if (RECORDING_VIDEO) {
             //Location
             //Rotate
-            dEngine_WriteScreenshot(self.screenShotDirectory, true);
+            self.engine.writeScreenshot(self.screenShotDirectory, rotate: true)
         }
     }
 
@@ -367,7 +368,7 @@ class EAGLView : UIView {
 
     func startAnimation() {
         if (!animating) {
-            displayLink = CADisplayLink(target:self, selector:"drawView:")
+            displayLink = CADisplayLink(target:self, selector:#selector(self.drawView(_:)))
             displayLink?.frameInterval = animationFrameInterval
             displayLink?.addToRunLoop(NSRunLoop.currentRunLoop(), forMode:NSDefaultRunLoopMode)
             animating = true;
