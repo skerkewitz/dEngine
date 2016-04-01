@@ -25,11 +25,11 @@
  */
 
 #include "renderer.h"
-#include <math.h>
 #include "renderer_fixed.h"
 #include "renderer_progr.h"
 #include "stats.h"
-#include "timer.h"
+
+#include "dEngine-Swift.h"
 
 int renderWidth;
 int renderHeight;
@@ -65,93 +65,96 @@ void SCR_Init(int rendererType,int viewPortWidth,int viewPortHeight) {
     renderWidth =  viewPortWidth;
     renderHeight = viewPortHeight;
     
-	if (rendererType == GL_11_RENDERER) {
-		printf("Running as openGL ES 1.1\n");
-		initFixedRenderer(&renderer);
-	}
-	
-	if (rendererType == GL_20_RENDERER) {
-		printf("Running as openGL ES 2.0\n"); 
-		initProgrRenderer(&renderer);
-	}
-	
-	//Generate indices for text rendition
-	for(int i=0; i < 42 ; i++) {
-		indicesString[i*6] = i*4;
-		indicesString[i*6+1] = i*4+1;
-		indicesString[i*6+2] = i*4+2;
-		indicesString[i*6+3] = i*4;
-		indicesString[i*6+4] = i*4+2;
-		indicesString[i*6+5] = i*4+3;
-		
-	}
-	
-	
-	//Sprite stuff
+    if (rendererType == GL_11_RENDERER) {
+        printf("Running as openGL ES 1.1\n");
+        initFixedRenderer(&renderer);
+    }
+
+    if (rendererType == GL_20_RENDERER) {
+        printf("Running as openGL ES 2.0\n");
+        initProgrRenderer(&renderer);
+    }
+
+    //Generate indices for text rendition
+    for(int i=0; i < 42 ; i++) {
+        indicesString[i*6] = i*4;
+        indicesString[i*6+1] = i*4+1;
+        indicesString[i*6+2] = i*4+2;
+        indicesString[i*6+3] = i*4;
+        indicesString[i*6+4] = i*4+2;
+        indicesString[i*6+5] = i*4+3;
+
+    }
+
+
+    //Sprite stuff
     svertex_t *v = verticesSprite;
-	//	4 3
-	//	1 2
-	/*1*/v->text[0] = 0 ; 	v->text[1] = 0; 	v->pos[0] = 0;				v->pos[1] = 0;				v++;
-	/*2*/v->text[0] = 1;	v->text[1] = 0;		v->pos[0] = renderWidth ;	v->pos[1] = 0;				v++;
-	/*3*/v->text[0] = 1;	v->text[1] = 1;		v->pos[0] = renderWidth ;	v->pos[1] = renderHeight;	v++;
-	/*4*/v->text[0] = 0;	v->text[1] = 1;		v->pos[0] =  0;				v->pos[1] = renderHeight;	v++;
-	
+    //	4 3
+    //	1 2
+    /*1*/v->text[0] = 0 ; 	v->text[1] = 0; 	v->pos[0] = 0;				v->pos[1] = 0;				v++;
+    /*2*/v->text[0] = 1;	v->text[1] = 0;		v->pos[0] = renderWidth ;	v->pos[1] = 0;				v++;
+    /*3*/v->text[0] = 1;	v->text[1] = 1;		v->pos[0] = renderWidth ;	v->pos[1] = renderHeight;	v++;
+    /*4*/v->text[0] = 0;	v->text[1] = 1;		v->pos[0] =  0;				v->pos[1] = renderHeight;	v++;
+
 }
 
 
 
 void DrawStats()
 {
-	static svertex_t vertexString[256];
-	uint numVertices;
-	
-	if (fps > 99)
-		sprintf( fpsText, "fps:%d",fps );
-	else if (fps > 9) 
-		sprintf( fpsText, "fps: %d",fps );
-	else
-		sprintf( fpsText, "fps:  %d",fps );
-	
-	sprintf( teSwText, textSwitchStr,STATS_GetTexSwitchCount() );
-	sprintf( polCnText, polyCount,STATS_GetTrianglesCount() );
-	sprintf(msText, msCount,simulationTime);
-	sprintf(shSwText, shadSwitchStr, STATS_GetShaderSwitchCount());
-	sprintf(bldwText, blendSwitchStr, STATS_GetBlendingSwitchCount());
-	
-	renderer.SetTexture(font.texfont->textureId);
-	
-	numVertices = Font_GenerateStringVertexArray(vertexString,fpsText,300,400);
-	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
-	
-	numVertices = Font_GenerateStringVertexArray(vertexString,teSwText,300, 360);
-	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
-	
-	numVertices = Font_GenerateStringVertexArray(vertexString,polCnText,300, 320);
-	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
-	
-	numVertices = Font_GenerateStringVertexArray(vertexString,msText,300, 280);
-	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
-	
-	numVertices = Font_GenerateStringVertexArray(vertexString,shSwText,300, 240);
-	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
-	
-	numVertices = Font_GenerateStringVertexArray(vertexString,bldwText,300, 200);
-	renderer.RenderString(vertexString,indicesString,numVertices/4*6);
-	
+    static svertex_t vertexString[256];
+    uint numVertices;
+
+    NSInteger fps = [EngineContext instance].timer.fps;
+    NSInteger simulationTime = [EngineContext instance].timer.simulationTime;
+
+    if (fps > 99)
+        sprintf(fpsText, "fps:%ld",(unsigned long)(fps));
+    else if (fps > 9)
+        sprintf(fpsText, "fps: %ld", (unsigned long)(fps));
+    else
+        sprintf(fpsText, "fps:  %ld", (unsigned long)(fps));
+
+    sprintf(teSwText, textSwitchStr,STATS_GetTexSwitchCount() );
+    sprintf(polCnText, polyCount,STATS_GetTrianglesCount() );
+    sprintf(msText, msCount, simulationTime);
+    sprintf(shSwText, shadSwitchStr, STATS_GetShaderSwitchCount());
+    sprintf(bldwText, blendSwitchStr, STATS_GetBlendingSwitchCount());
+
+    renderer.SetTexture(font.texfont->textureId);
+
+    numVertices = Font_GenerateStringVertexArray(vertexString,fpsText,300,400);
+    renderer.RenderString(vertexString,indicesString,numVertices/4*6);
+
+    numVertices = Font_GenerateStringVertexArray(vertexString,teSwText,300, 360);
+    renderer.RenderString(vertexString,indicesString,numVertices/4*6);
+
+    numVertices = Font_GenerateStringVertexArray(vertexString,polCnText,300, 320);
+    renderer.RenderString(vertexString,indicesString,numVertices/4*6);
+
+    numVertices = Font_GenerateStringVertexArray(vertexString,msText,300, 280);
+    renderer.RenderString(vertexString,indicesString,numVertices/4*6);
+
+    numVertices = Font_GenerateStringVertexArray(vertexString,shSwText,300, 240);
+    renderer.RenderString(vertexString,indicesString,numVertices/4*6);
+
+    numVertices = Font_GenerateStringVertexArray(vertexString,bldwText,300, 200);
+    renderer.RenderString(vertexString,indicesString,numVertices/4*6);
+
 }
 
 void SCR_RenderFrame(void) {
 
-	STATS_Begin();
-	renderer.Set3D();
-	renderer.RenderEntities();
+    STATS_Begin();
+    renderer.Set3D();
+    renderer.RenderEntities();
 
-	if (renderer.statsEnabled) {
-		renderer.Set2D();
-		DrawStats();
-	}
-	
-	renderer.StopRendition();
+    if (renderer.statsEnabled) {
+        renderer.Set2D();
+        DrawStats();
+    }
+
+    renderer.StopRendition();
 }
 
 
@@ -159,36 +162,36 @@ inline void gluPerspective(float fovy, float aspect, float zNear, float zFar,mat
 
     float f  = (float)(1 / tan(fovy*DEG_TO_RAD/2));
 
-	projectionMatrix[0]= f/aspect;	projectionMatrix[4]= 0;	projectionMatrix[ 8]= 0;								projectionMatrix[12]= 0;
-	projectionMatrix[1]= 0; 		projectionMatrix[5]= f;	projectionMatrix[ 9]= 0;								projectionMatrix[13]= 0;
-	projectionMatrix[2]= 0;			projectionMatrix[6]= 0;	projectionMatrix[10]=(zFar+zNear)/(zNear-zFar) ;		projectionMatrix[14]= 2*(zFar*zNear)/(zNear-zFar);
-	projectionMatrix[3]= 0;			projectionMatrix[7]=0;	projectionMatrix[11]=-1;								projectionMatrix[15]= 0;
+    projectionMatrix[0]= f/aspect;	projectionMatrix[4]= 0;	projectionMatrix[ 8]= 0;								projectionMatrix[12]= 0;
+    projectionMatrix[1]= 0; 		projectionMatrix[5]= f;	projectionMatrix[ 9]= 0;								projectionMatrix[13]= 0;
+    projectionMatrix[2]= 0;			projectionMatrix[6]= 0;	projectionMatrix[10]=(zFar+zNear)/(zNear-zFar) ;		projectionMatrix[14]= 2*(zFar*zNear)/(zNear-zFar);
+    projectionMatrix[3]= 0;			projectionMatrix[7]=0;	projectionMatrix[11]=-1;								projectionMatrix[15]= 0;
 }
 
 inline void gluLookAt(  vec3_t vEye,  vec3_t vLookat, vec3_t vUp ,matrix_t fModelView) {
-	vec3_t vN,vU,vV;
-	
+    vec3_t vN,vU,vV;
+
     // determine the new n
     vectorSubtract(vEye, vLookat, vN);
-	
+
     // determine the new u by crossing with the up vector
     vectorCrossProduct(vUp, vN, vU) ;
-	
+
     // normalize both the u and n vectors
     normalize(vU) ; 
-	normalize(vN);
-	
+    normalize(vN);
+
     // determine v by crossing n and u
     vectorCrossProduct(vN, vU, vV);
-	
+
     // create a model view matrix
-	fModelView[0] = vU[0]; fModelView[4] = vU[1]; fModelView[8] = vU[2]; fModelView[12] = - DotProduct(vEye,vU);
-	fModelView[1] = vV[0]; fModelView[5] = vV[1]; fModelView[9] = vV[2]; fModelView[13] = - DotProduct(vEye,vV);
-	fModelView[2] = vN[0]; fModelView[6] = vN[1]; fModelView[10]= vN[2]; fModelView[14]=  - DotProduct(vEye,vN);
-	fModelView[3]=	0.0f;  fModelView[7]= 0.0f;	  fModelView[11]= 0.0f;	 fModelView[15]= 1.0f;
+    fModelView[0] = vU[0]; fModelView[4] = vU[1]; fModelView[8] = vU[2]; fModelView[12] = - DotProduct(vEye,vU);
+    fModelView[1] = vV[0]; fModelView[5] = vV[1]; fModelView[9] = vV[2]; fModelView[13] = - DotProduct(vEye,vV);
+    fModelView[2] = vN[0]; fModelView[6] = vN[1]; fModelView[10]= vN[2]; fModelView[14]=  - DotProduct(vEye,vN);
+    fModelView[3]=	0.0f;  fModelView[7]= 0.0f;	  fModelView[11]= 0.0f;	 fModelView[15]= 1.0f;
 
 }
 
 void SCR_GetColorBuffer(uchar* data) {
-	renderer.GetColorBuffer(data);
+    renderer.GetColorBuffer(data);
 }

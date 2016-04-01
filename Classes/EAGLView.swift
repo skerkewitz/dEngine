@@ -278,7 +278,7 @@ class EAGLView : UIView {
             CAM_StartPlaying("data/cameraPath/fps.cp"); //fps.cp //ikarauga_level5.cp
 
             if (RECORDING_VIDEO) {
-                Timer_ForceTimeIncrement(33);
+                self.engine.context.timer.forceTimeIncrement(33);
             }
         }
 

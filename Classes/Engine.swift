@@ -36,11 +36,26 @@ import UIKit
 //#include "material.h"
 //#include "commands.h"
 
+var engineContext: Engine?
+
+@objc
+public class EngineContext: NSObject {
+
+    static let instance = EngineContext()
+
+    public let timer = Timer()
+}
+
+
 class Engine {
 
     var num_screenshot: UInt = 0
 
+    let context = EngineContext.instance
+
     init(rendererType: Int,  viewPort: CGSize) {
+
+
         FS_InitFilesystem()
         SCR_Init(Int32(rendererType), Int32(viewPort.width), Int32(viewPort.height))
 
@@ -52,12 +67,12 @@ class Engine {
         World_Init()
         CAM_Init()
 
-        Timer_resetTime()
-        Timer_Resume()
+        context.timer.resetTime()
+        context.timer.resume()
     }
 
     func hostFrame() {
-        Timer_tick()
+        context.timer.tick()
 
         Comm_Update()
         CAM_Update()

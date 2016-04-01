@@ -26,7 +26,7 @@
 
 #include "commands.h"
 #include "camera.h"
-#include "timer.h"
+#import "dEngine-Swift.h"
 
 #define MAX_NUM_COMMANDS 256
 command_t commands[MAX_NUM_COMMANDS];
@@ -48,13 +48,13 @@ void Comm_AddCommand(command_t* command)
 #define LOOK_AROUND_ANGULAR_SPEED_MS (0.0001f/2.0f*3.14f)
 #define MOVE_SPEED_MS (0.1f)
 
-void Comm_AddPitch(float value)
-{
+void Comm_AddPitch(float value) {
+	NSInteger timediff = [EngineContext instance].timer.timediff;
 	camera.pitch += LOOK_AROUND_ANGULAR_SPEED_MS * timediff * value;
 }
 
-void Comm_AddHead(float value)
-{
+void Comm_AddHead(float value) {
+	NSInteger timediff = [EngineContext instance].timer.timediff;
 	camera.head += LOOK_AROUND_ANGULAR_SPEED_MS * timediff * value;
 }
 
@@ -65,6 +65,7 @@ void Comm_AddForBackWard(float value)
 	vectorCopy(camera.forward,depVector);
 	
 	depVector[1] = 0;
+	NSInteger timediff = [EngineContext instance].timer.timediff;
 	vectorScale(depVector,timediff*MOVE_SPEED_MS* value,depVector);
 	vectorAdd(camera.position,depVector,camera.position);
 }
@@ -76,6 +77,7 @@ void Comm_Strafe(float value)
 	vectorCopy(camera.up,depVector);
 	
 	depVector[1] = 0;
+	NSInteger timediff = [EngineContext instance].timer.timediff;
 	vectorScale(depVector,timediff*MOVE_SPEED_MS* value,depVector);
 	vectorAdd(camera.position,depVector,camera.position);
 }
